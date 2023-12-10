@@ -306,6 +306,42 @@ nca_report_stats <- mutate(nca_report,
 )
 
 # kruskal-wallis test by cat
+# vector with parameters to analyze
+param_vector <- c("cmax", "auc", "auc_30_90", "c_mean_30_90", "ke", "t12", "Cl", "V")
+for(i in param_vector){
+  #kruskal-wallis test
+  
+  nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("asc_", i)] <- kruskal.test(nca[[paste0("asc_", i)]] ~ nca$cat)$p.value
+  nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("nac_", i)] <- kruskal.test(nca[[paste0("nac_", i)]] ~ nca$cat)$p.value
+  nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("dfo_", i)] <- kruskal.test(nca[[paste0("dfo_", i)]] ~ nca$cat)$p.value
+
+  # mann-whitney test cat1 vs cat2
+  nca_cat1_cat2 <- filter(nca, cat == "cat1" | cat == "cat2")
+  nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("asc_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("asc_", i)]] ~ nca_cat1_cat2$cat)$p.value
+  nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("nac_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("nac_", i)]] ~ nca_cat1_cat2$cat)$p.value
+  nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("dfo_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("dfo_", i)]] ~ nca_cat1_cat2$cat)$p.value
+
+}
+
+write.csv(nca_report_stats, "output/non_compartimental_analysis/nca_report_stats.csv", row.names = FALSE)
+
+
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+################ Hasta aquí listoooooooo##############################
+################ Hasta aquí listoooooooo##############################
+################ Hasta aquí listoooooooo##############################
+################ Hasta aquí listoooooooo##############################
+################ Hasta aquí listoooooooo##############################
+################ Hasta aquí listoooooooo##############################
+################ Hasta aquí listoooooooo##############################
+######################################################################
+######################################################################
+######################################################################
+
+
 
 
 # plot(density(nca_asc$auc, na.rm = TRUE))
