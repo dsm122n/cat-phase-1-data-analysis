@@ -248,7 +248,64 @@ for(i in unique(data$id)){
   nca$dfo_V[nca$id == i] <- nca$dfo_Cl[nca$id == i] / nca$dfo_ke[nca$id == i]
 }
 
+nca_summary <- summary(nca)
 
+# export nca table to csv
+write.csv(nca, "output/non_compartimental_analysis/nca.csv", row.names = FALSE)
+write.csv(nca_summary, "output/non_compartimental_analysis/nca_summary.csv", row.names = FALSE)
+
+# summary 
+nca_report <- tibble(
+  parameter = c("asc_cmax", "asc_tmax", "asc_auc", "asc_auc_30_90", "asc_c_mean_30_90", "asc_ke", "asc_t12", "asc_Cl", "asc_V",
+                "nac_cmax", "nac_tmax", "nac_auc", "nac_auc_30_90", "nac_c_mean_30_90", "nac_ke", "nac_t12", "nac_Cl", "nac_V",
+                "dfo_cmax", "dfo_tmax", "dfo_auc", "dfo_auc_30_90", "dfo_c_mean_30_90", "dfo_ke", "dfo_t12", "dfo_Cl", "dfo_V"),
+  cat1_mean = c(NA),
+  cat1_sd = c(NA),
+  cat1_median = c(NA),
+  cat1_Q1 = c(NA),
+  cat1_Q3 = c(NA),
+  cat2_mean = c(NA),
+  cat2_sd = c(NA),
+  cat2_median = c(NA),
+  cat2_Q1 = c(NA),
+  cat2_Q3 = c(NA),
+  p_mean = c(NA),
+  p_sd = c(NA),
+  p_median = c(NA),
+  p_Q1 = c(NA),
+  p_Q3 = c(NA),
+
+  )
+
+
+
+for(i in nca_report$parameter){
+  nca_report$cat1_mean[nca_report$parameter == i] <- mean(nca[[i]][nca$cat == "cat1"], na.rm = TRUE)
+  nca_report$cat1_sd[nca_report$parameter == i] <- sd(nca[[i]][nca$cat == "cat1"], na.rm = TRUE)
+  nca_report$cat1_median[nca_report$parameter == i] <- median(nca[[i]][nca$cat == "cat1"], na.rm = TRUE)
+  nca_report$cat1_Q1[nca_report$parameter == i] <- quantile(nca[[i]][nca$cat == "cat1"], 0.25, na.rm = TRUE)
+  nca_report$cat1_Q3[nca_report$parameter == i] <- quantile(nca[[i]][nca$cat == "cat1"], 0.75, na.rm = TRUE)
+  nca_report$cat2_mean[nca_report$parameter == i] <- mean(nca[[i]][nca$cat == "cat2"], na.rm = TRUE)
+  nca_report$cat2_sd[nca_report$parameter == i] <- sd(nca[[i]][nca$cat == "cat2"], na.rm = TRUE)
+  nca_report$cat2_median[nca_report$parameter == i] <- median(nca[[i]][nca$cat == "cat2"], na.rm = TRUE)
+  nca_report$cat2_Q1[nca_report$parameter == i] <- quantile(nca[[i]][nca$cat == "cat2"], 0.25, na.rm = TRUE)
+  nca_report$cat2_Q3[nca_report$parameter == i] <- quantile(nca[[i]][nca$cat == "cat2"], 0.75, na.rm = TRUE)
+  nca_report$p_mean[nca_report$parameter == i] <- mean(nca[[i]][nca$cat == "p"], na.rm = TRUE)
+  nca_report$p_sd[nca_report$parameter == i] <- sd(nca[[i]][nca$cat == "p"], na.rm = TRUE)
+  nca_report$p_median[nca_report$parameter == i] <- median(nca[[i]][nca$cat == "p"], na.rm = TRUE)
+  nca_report$p_Q1[nca_report$parameter == i] <- quantile(nca[[i]][nca$cat == "p"], 0.25, na.rm = TRUE)
+  nca_report$p_Q3[nca_report$parameter == i] <- quantile(nca[[i]][nca$cat == "p"], 0.75, na.rm = TRUE)
+}
+
+write.csv(nca_report, "output/non_compartimental_analysis/nca_report.csv", row.names = FALSE)
+
+# statistics
+nca_report_stats <- mutate(nca_report,
+  kruskal_wallis = c(NA),
+  mann_whitney_cat1_cat2 = c(NA)
+)
+
+# kruskal-wallis test by cat
 
 
 # plot(density(nca_asc$auc, na.rm = TRUE))
