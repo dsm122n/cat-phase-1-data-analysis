@@ -170,7 +170,7 @@ for (i in unique(data$id)){
     nca$nac_auc[nca$id == i] <- AUC((data_id$time)/60, (data_id$nac)/1000, na.rm = TRUE)
     nca$dfo_auc[nca$id == i] <- AUC((data_id$time)/60, (data_id$dfo)/1000, na.rm = TRUE)
 
-    # calculate AUC 30 to 90 minutes
+    # calculate AUC 30 to 90 minutes in milimolar*hours
     nca$asc_auc_30_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$asc)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
     nca$nac_auc_30_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$nac)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
     nca$dfo_auc_30_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$dfo)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
@@ -232,6 +232,24 @@ for (i in unique(data$id)) {
     }
 }
 
+# add last trapezoid to AUC
+nca <- mutate(nca, 
+    asc_auc_inf = c(0),
+    nac_auc_inf = c(0),
+    dfo_auc_inf = c(0)
+)
+for (i in unique(data$id)) {
+    # filter by individual
+    data_id <- filter(data, id == i)
+    # only calculate k for cat1 and cat2
+    if (data_id$cat[1] == "cat1" | data_id$cat[1] == "cat2"){
+        # calculate AUC
+        nca$asc_auc_inf[nca$id == i] <- nca$asc_auc[nca$id == i] + ((data_id$asc[data_id$time == 90]/1000)/nca$asc_ke[nca$id == i])
+        nca$nac_auc_inf[nca$id == i] <- nca$nac_auc[nca$id == i] + ((data_id$nac[data_id$time == 90]/1000)/nca$nac_ke[nca$id == i])
+        nca$dfo_auc_inf[nca$id == i] <- nca$dfo_auc[nca$id == i] + ((data_id$dfo[data_id$time == 90]/1000)/nca$dfo_ke[nca$id == i])
+        }
+}
+View(nca)
 # continue calculating parameters for each individual (t1/2, Cl, V)
 for(i in unique(data$id)){
   # filter by individual
@@ -241,9 +259,9 @@ for(i in unique(data$id)){
   nca$nac_t12[nca$id == i] <- log(2) / nca$nac_ke[nca$id == i]
   nca$dfo_t12[nca$id == i] <- log(2) / nca$dfo_ke[nca$id == i]
   # calculate Cl
-  nca$asc_Cl[nca$id == i] <- nca$asc_dosis[nca$id == i] / nca$asc_auc[nca$id == i]
-  nca$nac_Cl[nca$id == i] <- nca$nac_dosis[nca$id == i] / nca$nac_auc[nca$id == i]
-  nca$dfo_Cl[nca$id == i] <- nca$dfo_dosis[nca$id == i] / nca$dfo_auc[nca$id == i]
+  nca$asc_Cl[nca$id == i] <- nca$asc_dosis[nca$id == i] / nca$asc_auc_inf[nca$id == i]
+  nca$nac_Cl[nca$id == i] <- nca$nac_dosis[nca$id == i] / nca$nac_auc_inf[nca$id == i]
+  nca$dfo_Cl[nca$id == i] <- nca$dfo_dosis[nca$id == i] / nca$dfo_auc_inf[nca$id == i]
   # calculate V
   nca$asc_V[nca$id == i] <- nca$asc_Cl[nca$id == i] / nca$asc_ke[nca$id == i]
   nca$nac_V[nca$id == i] <- nca$nac_Cl[nca$id == i] / nca$nac_ke[nca$id == i]
@@ -276,13 +294,13 @@ qqline(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE)
 nca_summary <- summary(nca)
 
 # export nca table to csv
-write.csv(nca, "output/non_compartimental_analysis/nca.csv", row.names = FALSE)
+write.csv(nca, "output/non_compartimental_analysis/00 nca.csv", row.names = FALSE)
 
 # summary 
 nca_report <- tibble(
-  parameter = c("asc_cmax", "asc_tmax", "asc_auc", "asc_auc_30_90", "asc_c_mean_30_90", "asc_ke", "asc_t12", "asc_Cl", "asc_V",
-                "nac_cmax", "nac_tmax", "nac_auc", "nac_auc_30_90", "nac_c_mean_30_90", "nac_ke", "nac_t12", "nac_Cl", "nac_V",
-                "dfo_cmax", "dfo_tmax", "dfo_auc", "dfo_auc_30_90", "dfo_c_mean_30_90", "dfo_ke", "dfo_t12", "dfo_Cl", "dfo_V"),
+  parameter = c("asc_cmax", "asc_tmax", "asc_auc", "asc_auc_30_90", "asc_c_mean_30_90", "asc_ke", "asc_t12", "asc_Cl", "asc_V", "asc_auc_inf",
+                "nac_cmax", "nac_tmax", "nac_auc", "nac_auc_30_90", "nac_c_mean_30_90", "nac_ke", "nac_t12", "nac_Cl", "nac_V", "nac_auc_inf",
+                "dfo_cmax", "dfo_tmax", "dfo_auc", "dfo_auc_30_90", "dfo_c_mean_30_90", "dfo_ke", "dfo_t12", "dfo_Cl", "dfo_V", "dfo_auc_inf"),
   cat1_mean = c(NA),
   cat1_sd = c(NA),
   cat1_median = c(NA),
@@ -321,7 +339,7 @@ for(i in nca_report$parameter){
   nca_report$p_Q3[nca_report$parameter == i] <- quantile(nca[[i]][nca$cat == "p"], 0.75, na.rm = TRUE)
 }
 
-write.csv(nca_report, "output/non_compartimental_analysis/nca_report.csv", row.names = FALSE)
+write.csv(nca_report, "output/non_compartimental_analysis/nca_report_separate_cells.csv", row.names = FALSE)
 
 # just output "Me (q1 - q3)"
 nca_report_unite  <- transmute(nca_report,
@@ -339,7 +357,7 @@ nca_report_stats <- mutate(nca_report_unite,
 
 # kruskal-wallis test by cat
 # vector with parameters to analyze
-param_vector <- c("cmax", "auc", "auc_30_90", "c_mean_30_90", "ke", "t12", "Cl", "V")
+param_vector <- c("cmax", "auc", "auc_30_90", "c_mean_30_90", "ke", "t12", "Cl", "V", "auc_inf")
 for(i in param_vector){
   #kruskal-wallis test
   
@@ -357,13 +375,11 @@ for(i in param_vector){
 
 }
 
-write.csv(nca_report_stats, "output/non_compartimental_analysis/nca_report_stats.csv", row.names = FALSE)
+write.csv(nca_report_stats, "output/non_compartimental_analysis/nca_report_stats_no_asterisk.csv", row.names = FALSE)
 
 # mark significant differences
 nca_report_stats <- mutate(nca_report_stats,
   kruskal_wallis = ifelse(kruskal_wallis < 0.05, paste0(kruskal_wallis, "*"), kruskal_wallis),
   mann_whitney_cat1_cat2 = ifelse(mann_whitney_cat1_cat2 < 0.05, paste0(mann_whitney_cat1_cat2, "*"), mann_whitney_cat1_cat2)
 )
-
-
 write.csv(nca_report_stats, "output/non_compartimental_analysis/00 nca_report_stats_sig.csv", row.names = FALSE)
