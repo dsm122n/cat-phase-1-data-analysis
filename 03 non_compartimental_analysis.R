@@ -185,7 +185,8 @@ for (i in unique(data$id)){
 # calculate elimination constant (k) for each individual using linear regression at times 90-180 min
 
 # add log concentration (mM) to data
-data <- mutate(data, log_asc = log(asc/1000), log_nac = log(nac/1000), log_dfo = log(dfo/1000)) 
+data <- mutate(data, log_asc = log(asc/1000), log_nac = log(nac/1000), log_dfo = log(dfo/1000))  %>%
+    mutate(time_h = time/60)
 # if concentration is 0, then log concentration is NA
 data <- mutate(data, log_asc = ifelse(asc == 0, NA, log_asc),
                log_nac = ifelse(nac == 0, NA, log_nac),
@@ -198,7 +199,7 @@ for (i in unique(data$id)) {
     if (data_id$cat[1] == "cat1" | data_id$cat[1] == "cat2"){
         # calculate k
         if(is.na(data_id$asc[1]) == FALSE && data_id$asc[1] != 0){
-            nca$asc_ke[nca$id == i] <- lm(log_asc ~ time, data = data_id) %>% 
+            nca$asc_ke[nca$id == i] <- lm(log_asc ~ time_h, data = data_id) %>% 
                 summary(na.rm = TRUE) %>% 
                 .$coefficients %>% 
                 .[2] * (-1)
@@ -206,7 +207,7 @@ for (i in unique(data$id)) {
             nca$asc_ke[nca$id == i] <- NA
         }
         if(is.na(data_id$nac[1]) == FALSE && data_id$nac[1] != 0){
-            nca$nac_ke[nca$id == i] <- lm(log_nac ~ time, data = data_id) %>% 
+            nca$nac_ke[nca$id == i] <- lm(log_nac ~ time_h, data = data_id) %>% 
                 summary(na.rm = TRUE) %>% 
                 .$coefficients %>% 
                 .[2] * (-1)
@@ -214,7 +215,7 @@ for (i in unique(data$id)) {
             nca$nac_ke[nca$id == i] <- NA
         }
         if(is.na(data_id$dfo[1]) == FALSE && data_id$dfo[1] != 0){
-            nca$dfo_ke[nca$id == i] <- lm(log_dfo ~ time, data = data_id) %>% 
+            nca$dfo_ke[nca$id == i] <- lm(log_dfo ~ time_h, data = data_id) %>% 
                 summary(na.rm = TRUE) %>% 
                 .$coefficients %>% 
                 .[2] * (-1)
@@ -250,23 +251,24 @@ for(i in unique(data$id)){
 
 # nca normality analysis
 # shapiro test for normality, then plot density, histogram and qqplot
-shapiro.test(nca$asc_auc[nca$cat == "cat1"])
-shapiro.test(nca$asc_auc[nca$cat == "cat2"])
-shapiro.test(nca$asc_auc[nca$cat == "p"])
-plot(density(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE))
-plot(density(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE))
-plot(density(nca$asc_auc[nca$cat == "p"], na.rm = TRUE))
-hist(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE)
-hist(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE)
-hist(nca$asc_auc[nca$cat == "p"], na.rm = TRUE)
-boxplot(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE)
-boxplot(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE)
-boxplot(nca$asc_auc[nca$cat == "p"], na.rm = TRUE)
-qqnorm(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE) %>%
-    qqline(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE)
-qqnorm(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE) %>%
-    qqline(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE)
-qqnorm(nca$asc_auc[nca$cat == "p"], na.rm = TRUE)
+shapiro.test(nca$asc_auc_30_90[nca$cat == "cat1"])
+shapiro.test(nca$asc_auc_30_90[nca$cat == "cat2"])
+shapiro.test(nca$asc_auc_30_90[nca$cat == "p"])
+plot(density(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE))
+plot(density(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE))
+plot(density(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE))
+hist(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE)
+hist(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE)
+hist(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE)
+boxplot(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE)
+boxplot(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE)
+boxplot(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE)
+qqnorm(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE)
+qqline(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE)
+qqnorm(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE)
+qqline(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE)
+qqnorm(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE)
+qqline(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE)
 
 
 
@@ -274,7 +276,6 @@ nca_summary <- summary(nca)
 
 # export nca table to csv
 write.csv(nca, "output/non_compartimental_analysis/nca.csv", row.names = FALSE)
-write.csv(nca_summary, "output/non_compartimental_analysis/nca_summary.csv", row.names = FALSE)
 
 # summary 
 nca_report <- tibble(
@@ -321,8 +322,16 @@ for(i in nca_report$parameter){
 
 write.csv(nca_report, "output/non_compartimental_analysis/nca_report.csv", row.names = FALSE)
 
+# just output "Me (q1 - q3)"
+nca_report_unite  <- transmute(nca_report,
+  parameter = parameter,
+  cat1 = paste0(round(cat1_median, digits = 3), " (", round(cat1_Q1, digits = 3), " - ", round(cat1_Q3, digits = 3), ")"),
+  cat2 = paste0(round(cat2_median, digits = 3), " (", round(cat2_Q1, digits = 3), " - ", round(cat2_Q3, digits = 3), ")"),
+  p = paste0(round(p_median, digits = 3), " (", round(p_Q1, digits = 3), " - ", round(p_Q3, digits = 3), ")")
+)
+write.csv(nca_report_unite, "output/non_compartimental_analysis/00 nca_report_unite.csv", row.names = FALSE)
 # statistics
-nca_report_stats <- mutate(nca_report,
+nca_report_stats <- mutate(nca_report_unite,
   kruskal_wallis = c(NA),
   mann_whitney_cat1_cat2 = c(NA)
 )
@@ -356,7 +365,7 @@ nca_report_stats <- mutate(nca_report_stats,
 )
 
 
-write.csv(nca_report_stats, "output/non_compartimental_analysis/nca_report_stats_sig.csv", row.names = FALSE)
+write.csv(nca_report_stats, "output/non_compartimental_analysis/00 nca_report_stats_sig.csv", row.names = FALSE)
 
 
 ######################################################################
