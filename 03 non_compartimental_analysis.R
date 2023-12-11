@@ -184,7 +184,7 @@ for (i in unique(data$id)){
 
 # calculate elimination constant (k) for each individual using linear regression at times 90-180 min
 
-# add log concentration to data
+# add log concentration (mM) to data
 data <- mutate(data, log_asc = log(asc/1000), log_nac = log(nac/1000), log_dfo = log(dfo/1000)) 
 # if concentration is 0, then log concentration is NA
 data <- mutate(data, log_asc = ifelse(asc == 0, NA, log_asc),
@@ -247,6 +247,28 @@ for(i in unique(data$id)){
   nca$nac_V[nca$id == i] <- nca$nac_Cl[nca$id == i] / nca$nac_ke[nca$id == i]
   nca$dfo_V[nca$id == i] <- nca$dfo_Cl[nca$id == i] / nca$dfo_ke[nca$id == i]
 }
+
+# nca normality analysis
+# shapiro test for normality, then plot density, histogram and qqplot
+shapiro.test(nca$asc_auc[nca$cat == "cat1"])
+shapiro.test(nca$asc_auc[nca$cat == "cat2"])
+shapiro.test(nca$asc_auc[nca$cat == "p"])
+plot(density(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE))
+plot(density(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE))
+plot(density(nca$asc_auc[nca$cat == "p"], na.rm = TRUE))
+hist(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE)
+hist(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE)
+hist(nca$asc_auc[nca$cat == "p"], na.rm = TRUE)
+boxplot(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE)
+boxplot(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE)
+boxplot(nca$asc_auc[nca$cat == "p"], na.rm = TRUE)
+qqnorm(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE) %>%
+    qqline(nca$asc_auc[nca$cat == "cat1"], na.rm = TRUE)
+qqnorm(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE) %>%
+    qqline(nca$asc_auc[nca$cat == "cat2"], na.rm = TRUE)
+qqnorm(nca$asc_auc[nca$cat == "p"], na.rm = TRUE)
+
+
 
 nca_summary <- summary(nca)
 
@@ -315,6 +337,8 @@ for(i in param_vector){
   nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("nac_", i)] <- kruskal.test(nca[[paste0("nac_", i)]] ~ nca$cat)$p.value
   nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("dfo_", i)] <- kruskal.test(nca[[paste0("dfo_", i)]] ~ nca$cat)$p.value
 
+
+
   # mann-whitney test cat1 vs cat2
   nca_cat1_cat2 <- filter(nca, cat == "cat1" | cat == "cat2")
   nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("asc_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("asc_", i)]] ~ nca_cat1_cat2$cat)$p.value
@@ -324,6 +348,15 @@ for(i in param_vector){
 }
 
 write.csv(nca_report_stats, "output/non_compartimental_analysis/nca_report_stats.csv", row.names = FALSE)
+
+# mark significant differences
+nca_report_stats <- mutate(nca_report_stats,
+  kruskal_wallis = ifelse(kruskal_wallis < 0.05, paste0(kruskal_wallis, "*"), kruskal_wallis),
+  mann_whitney_cat1_cat2 = ifelse(mann_whitney_cat1_cat2 < 0.05, paste0(mann_whitney_cat1_cat2, "*"), mann_whitney_cat1_cat2)
+)
+
+
+write.csv(nca_report_stats, "output/non_compartimental_analysis/nca_report_stats_sig.csv", row.names = FALSE)
 
 
 ######################################################################
