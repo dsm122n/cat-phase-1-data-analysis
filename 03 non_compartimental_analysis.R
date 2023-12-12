@@ -383,3 +383,30 @@ nca_report_stats <- mutate(nca_report_stats,
   mann_whitney_cat1_cat2 = ifelse(mann_whitney_cat1_cat2 < 0.05, paste0(mann_whitney_cat1_cat2, "*"), mann_whitney_cat1_cat2)
 )
 write.csv(nca_report_stats, "output/non_compartimental_analysis/00 nca_report_stats_sig.csv", row.names = FALSE)
+
+# summary table of nca parameters cat1 and cat2 together
+nca_report_cat_together <- tibble(
+  parameter = c("asc_ke", "asc_t12", "asc_Cl", "asc_V",
+                "nac_ke", "nac_t12", "nac_Cl", "nac_V",
+                "dfo_ke", "dfo_t12", "dfo_Cl", "dfo_V"),
+  cat_mean = c(NA),
+  cat_sd = c(NA),
+  cat_median = c(NA),
+  cat_Q1 = c(NA),
+  cat_Q3 = c(NA)
+)
+
+for(i in nca_report_cat_together$parameter){
+  nca_report_cat_together$cat_mean[nca_report_cat_together$parameter == i] <- mean(nca[[i]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE)
+  nca_report_cat_together$cat_sd[nca_report_cat_together$parameter == i] <- sd(nca[[i]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE)
+  nca_report_cat_together$cat_median[nca_report_cat_together$parameter == i] <- median(nca[[i]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE)
+  nca_report_cat_together$cat_Q1[nca_report_cat_together$parameter == i] <- quantile(nca[[i]][nca$cat == "cat1" | nca$cat == "cat2"], 0.25, na.rm = TRUE)
+  nca_report_cat_together$cat_Q3[nca_report_cat_together$parameter == i] <- quantile(nca[[i]][nca$cat == "cat1" | nca$cat == "cat2"], 0.75, na.rm = TRUE)
+}
+
+nca_report_cat_together_unite_cells <- transmute(nca_report_cat_together,
+  parameter = parameter,
+  cat = paste0(round(cat_median, digits = 3), " (", round(cat_Q1, digits = 3), " - ", round(cat_Q3, digits = 3), ")")
+)
+
+write.csv(nca_report_cat_together_unite_cells, "output/non_compartimental_analysis/01 nca_report_cat_together_unite_cells.csv", row.names = FALSE)
