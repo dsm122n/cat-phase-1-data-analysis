@@ -349,6 +349,16 @@ nca_report_unite  <- transmute(nca_report,
   p = paste0(round(p_median, digits = 3), " (", round(p_Q1, digits = 3), " - ", round(p_Q3, digits = 3), ")")
 )
 write.csv(nca_report_unite, "output/non_compartimental_analysis/00 nca_report_unite.csv", row.names = FALSE)
+
+# just output mean ± sd
+nca_report_unite_mean_sd <- transmute(nca_report,
+  parameter = parameter,
+  cat1 = paste0(round(cat1_mean, digits = 3), " ± ", round(cat1_sd, digits = 3)),
+  cat2 = paste0(round(cat2_mean, digits = 3), " ± ", round(cat2_sd, digits = 3)),
+  p = paste0(round(p_mean, digits = 3), " ± ", round(p_sd, digits = 3))
+)
+
+  
 # statistics
 nca_report_stats <- mutate(nca_report_unite,
   kruskal_wallis = c(NA),
