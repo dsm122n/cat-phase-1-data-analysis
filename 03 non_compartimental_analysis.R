@@ -77,8 +77,9 @@ sig_bar <- function(x.lo, x.hi, y.lo1, y.lo2, y.hi, label = "*", lab.space = .5,
 
 
 # import data covariables
-data <- tibble(read.csv("raw_data/all_data_long_3.csv", header = TRUE, sep = ","))
-
+data <- tibble(read.csv("clean_data/all_data_long_4_non_0.csv", header = TRUE, sep = ","))
+data_0 <- tibble(read.csv("raw_data/all_data_long_3.csv", header = TRUE, sep = ","))
+data  <- data_0
 # output data (nca = non-compartmental analysis)
 nca <- tibble(
   id = c(1:18),
@@ -156,9 +157,9 @@ for (i in unique(data$id)){
     # filter by individual
     data_id <- filter(data, id == i)
     # calculate Cmax
-    nca$asc_cmax[nca$id == i] <- max(data_id$asc)
-    nca$nac_cmax[nca$id == i] <- max(data_id$nac)
-    nca$dfo_cmax[nca$id == i] <- max(data_id$dfo)
+    nca$asc_cmax[nca$id == i] <- max(data_id$asc, na.rm = TRUE)
+    nca$nac_cmax[nca$id == i] <- max(data_id$nac, na.rm = TRUE)
+    nca$dfo_cmax[nca$id == i] <- max(data_id$dfo, na.rm = TRUE)
 
     # calculate Tmax
     nca$asc_tmax[nca$id == i] <- data_id$time[which.max(data_id$asc)]
@@ -188,7 +189,65 @@ for (i in unique(data$id)){
 # add log concentration (mM) to data
 data <- mutate(data, log_asc = log(asc/1000), log_nac = log(nac/1000), log_dfo = log(dfo/1000))  %>%
     mutate(time_h = time/60)
+
+# graph log concentration vs time
+asc_elimination_phase <- ggplot(filter(data, time >=90, cat == "cat1"| cat == "cat2")) +
+    geom_point(aes(x = time_h, y = log_asc, col=cat)) +
+    # add line for individuals acording to column px
+    geom_line(aes(x = time_h, y = log_asc, col=cat, group = id)) +
+    geom_smooth(aes(x = time_h, y = log_asc, col=cat), method = "lm", se = FALSE, linetype = "dotted", size = 2) +
+    scale_color_manual(values =  c("#471061", "#208f8d", "#cae11e"), 
+                        labels = c("CAT 1",     "CAT 2",      "Placebo")) +
+    scale_shape_manual(values = c(16, 15, 17),
+                        labels = c("CAT 1", "CAT 2", "Placebo")) +
+    theme_graphpad() +
+    # facet wrap, without title box
+    facet_wrap(~cat, nrow = 1) +
+    theme(strip.text = element_blank(), strip.background = element_blank(), strip.placement = "outside") +
+      #delete labels for color and shape
+    theme(legend.position =  "none") +
+    labs(x = "Time (h)", y = "Log concentration (mM)") +
+    ggtitle("asc") +
+    theme(plot.title = element_text(hjust = 0.5))
+asc_elimination_phase
+nac_elimination_phase <- ggplot(filter(data, time >=90, cat == "cat1"| cat == "cat2")) +
+    geom_point(aes(x = time_h, y = log_nac, col=cat)) +
+    # add line for individuals acording to column px
+    geom_line(aes(x = time_h, y = log_nac, col=cat, group = id)) +
+    geom_smooth(aes(x = time_h, y = log_nac, col=cat), method = "lm", se = FALSE, linetype = "dotted", size = 2) +
+    scale_color_manual(values =  c("#471061", "#208f8d", "#cae11e"), 
+                        labels = c("CAT 1",     "CAT 2",      "Placebo")) +
+    scale_shape_manual(values = c(16, 15, 17),
+                        labels = c("CAT 1", "CAT 2", "Placebo")) +
+    theme_graphpad() +
+    facet_wrap(~cat, nrow = 1) +
+    theme(strip.text = element_blank(), strip.background = element_blank(), strip.placement = "outside") +
+    theme(legend.position =  "none") +
+    labs(x = "Time (h)", y = "Log concentration (mM)") +
+    ggtitle("nac") +
+    theme(plot.title = element_text(hjust = 0.5))
+dfo_elimination_phase <- ggplot(filter(data, time >=90, cat == "cat1"| cat == "cat2")) +
+    geom_point(aes(x = time_h, y = log_dfo, col=cat)) +
+    # add line for individuals acording to column px
+    geom_line(aes(x = time_h, y = log_dfo, col=cat, group = id)) +
+    geom_smooth(aes(x = time_h, y = log_dfo, col=cat), method = "lm", se = FALSE, linetype = "dotted", size = 2) +
+    scale_color_manual(values =  c("#471061", "#208f8d", "#cae11e"), 
+                        labels = c("CAT 1",     "CAT 2",      "Placebo")) +
+    scale_shape_manual(values = c(16, 15, 17),
+                        labels = c("CAT 1", "CAT 2", "Placebo")) +
+    theme_graphpad() +
+    facet_wrap(~cat, nrow = 1) +
+    theme(strip.text = element_blank(), strip.background = element_blank(), strip.placement = "outside") +
+    labs(x = "Time (h)", y = "Log concentration (mM)") +
+    ggtitle("dfo") +
+    theme(plot.title = element_text(hjust = 0.5))
+
+# Join graphs
+library(gridExtra)
+all_plots <- grid.arrange(asc_elimination_phase, nac_elimination_phase, dfo_elimination_phase, nrow = 3)
+ggsave("output/elimination_phase.png", all_plots, width = 20, height = 25, dpi = 1000, units = "cm")
 # if concentration is 0, then log concentration is NA
+
 data <- mutate(data, log_asc = ifelse(asc == 0, NA, log_asc),
                log_nac = ifelse(nac == 0, NA, log_nac),
                log_dfo = ifelse(dfo == 0, NA, log_dfo))
@@ -270,26 +329,44 @@ for(i in unique(data$id)){
 
 # nca normality analysis
 # shapiro test for normality, then plot density, histogram and qqplot
-shapiro.test(nca$asc_auc_30_90[nca$cat == "cat1"])
-shapiro.test(nca$asc_auc_30_90[nca$cat == "cat2"])
-shapiro.test(nca$asc_auc_30_90[nca$cat == "p"])
-plot(density(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE))
-plot(density(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE))
-plot(density(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE))
-hist(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE)
-hist(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE)
-hist(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE)
-boxplot(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE)
-boxplot(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE)
-boxplot(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE)
-qqnorm(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE)
-qqline(nca$asc_auc_30_90[nca$cat == "cat1"], na.rm = TRUE)
-qqnorm(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE)
-qqline(nca$asc_auc_30_90[nca$cat == "cat2"], na.rm = TRUE)
-qqnorm(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE)
-qqline(nca$asc_auc_30_90[nca$cat == "p"], na.rm = TRUE)
+# add to pdf 
+pdf("output/non_compartimental_analysis/00 nca normality analysis.pdf", width = 10, height = 10)
 
+# for cycle for each drug and parameter
+for (i in c("asc", "nac", "dfo")){
+  
+  for (j in c("cmax", "auc", "auc_30_90", "c_mean_30_90", "ke", "t12", "Cl", "V", "auc_inf")){
+    # shapiro test
+    shapiro_cat1 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat1"])
+    shapiro_cat2 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat2"])
+    par(mfrow = c(3, 3))
+    # add shapiro test p value to plot title
+    plot(density(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE), main = i)
+    rug(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = "", ticksize = 0.3)
+    hist(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = paste0(j, " CAT1"))
+    # plot qqplot
+    qqnorm(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1$p.value))
+    qqline(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1$p.value))
 
+    plot(density(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE), main = i)
+    rug(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, ticksize = 0.3)
+    hist(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, main = paste0(j," CAT2"))
+    qqnorm(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat2$p.value))
+    qqline(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat2$p.value))
+
+    # CAT1 and CAT2 together
+    shapiro_cat1_cat2 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"])
+
+    plot(density(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE), main = i)
+    rug(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, ticksize = 0.3)
+    hist(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, main = paste0(j," CAT1 and CAT2"))
+    qqnorm(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1_cat2$p.value))
+    qqline(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1_cat2$p.value))
+        
+  }
+
+}
+dev.off()
 
 nca_summary <- summary(nca)
 
@@ -298,9 +375,9 @@ write.csv(nca, "output/non_compartimental_analysis/00 nca.csv", row.names = FALS
 
 # summary 
 nca_report <- tibble(
-  parameter = c("asc_cmax", "asc_tmax", "asc_auc", "asc_auc_30_90", "asc_c_mean_30_90", "asc_ke", "asc_t12", "asc_Cl", "asc_V", "asc_auc_inf",
-                "nac_cmax", "nac_tmax", "nac_auc", "nac_auc_30_90", "nac_c_mean_30_90", "nac_ke", "nac_t12", "nac_Cl", "nac_V", "nac_auc_inf",
-                "dfo_cmax", "dfo_tmax", "dfo_auc", "dfo_auc_30_90", "dfo_c_mean_30_90", "dfo_ke", "dfo_t12", "dfo_Cl", "dfo_V", "dfo_auc_inf"),
+  parameter = c("asc_cmax", "asc_auc", "asc_auc_30_90", "asc_auc_inf", "asc_ke", "asc_t12", "asc_Cl", "asc_V",
+                "nac_cmax", "nac_auc", "nac_auc_30_90", "nac_auc_inf", "nac_ke", "nac_t12", "nac_Cl", "nac_V",
+                "dfo_cmax", "dfo_auc", "dfo_auc_30_90", "dfo_auc_inf", "dfo_ke", "dfo_t12", "dfo_Cl", "dfo_V"),
   cat1_mean = c(NA),
   cat1_sd = c(NA),
   cat1_median = c(NA),
@@ -341,14 +418,29 @@ for(i in nca_report$parameter){
 
 write.csv(nca_report, "output/non_compartimental_analysis/nca_report_separate_cells.csv", row.names = FALSE)
 
-# just output "Me (q1 - q3)"
-nca_report_unite  <- transmute(nca_report,
+# just output "Me (IQR q1 - q3)"
+nca_report_unite <- transmute(nca_report,
   parameter = parameter,
-  cat1 = paste0(round(cat1_median, digits = 3), " (", round(cat1_Q1, digits = 3), " - ", round(cat1_Q3, digits = 3), ")"),
-  cat2 = paste0(round(cat2_median, digits = 3), " (", round(cat2_Q1, digits = 3), " - ", round(cat2_Q3, digits = 3), ")"),
-  p = paste0(round(p_median, digits = 3), " (", round(p_Q1, digits = 3), " - ", round(p_Q3, digits = 3), ")")
+  cat1 = paste0(round(cat1_median, digits = 1), " (IQR ", round(cat1_Q1, digits = 1), " - ", round(cat1_Q3, digits = 1), ")"),
+  cat2 = paste0(round(cat2_median, digits = 1), " (IQR ", round(cat2_Q1, digits = 1), " - ", round(cat2_Q3, digits = 1), ")")
+  # p = paste0(round(p_median, digits = 1), " (IQR ", round(p_Q1, digits = 1), " - ", round(p_Q3, digits = 1), ")")
 )
-write.csv(nca_report_unite, "output/non_compartimental_analysis/00 nca_report_unite.csv", row.names = FALSE)
+write.csv(nca_report_unite, "output/non_compartimental_analysis/00 nca_report_unite_1digit.csv", row.names = FALSE)
+
+# string with Me (IQR q1 - q3) of cmax for asc, nac and dfo in cat1, cat2 and p
+paste0(nca_report_unite$cat1[nca_report_unite$parameter == "asc_cmax"], ", ", nca_report_unite$cat1[nca_report_unite$parameter == "nac_cmax"], ", ", nca_report_unite$cat1[nca_report_unite$parameter == "dfo_cmax"], " for CAT1 and", nca_report_unite$cat2[nca_report_unite$parameter == "asc_cmax"], ", ", nca_report_unite$cat2[nca_report_unite$parameter == "nac_cmax"], ", ", nca_report_unite$cat2[nca_report_unite$parameter == "dfo_cmax"], " for CAT2")
+nc
+
+# Mean concentration of placebo for AA 
+mean_placebo_asc <- 0
+for (i in c(2, 4, 7, 12, 13)) {
+  # filter by individual
+  data_id <- filter(data, id == i)
+  mean_placebo_asc <- c (mean_placebo_asc, mean(data_id$asc))
+} 
+mean_placebo_asc <- mean_placebo_asc[-1]
+# Me (IQR q1 - q3) of mean concentration of placebo for AA
+paste0(round(median(mean_placebo_asc), digits = 1), " (IQR ", round(quantile(mean_placebo_asc, 0.25), digits = 1), " - ", round(quantile(mean_placebo_asc, 0.75), digits = 1), ")")
 
 # just output mean ± sd
 nca_report_unite_mean_sd <- transmute(nca_report,
@@ -361,27 +453,30 @@ nca_report_unite_mean_sd <- transmute(nca_report,
   
 # statistics
 nca_report_stats <- mutate(nca_report_unite,
-  kruskal_wallis = c(NA),
+  # kruskal_wallis = c(NA),
   mann_whitney_cat1_cat2 = c(NA)
 )
 
 # kruskal-wallis test by cat
 # vector with parameters to analyze
-param_vector <- c("cmax", "auc", "auc_30_90", "c_mean_30_90", "ke", "t12", "Cl", "V", "auc_inf")
+param_vector <- c("cmax", "auc", "auc_30_90",  "auc_inf", "ke", "t12", "Cl", "V")
 for(i in param_vector){
   #kruskal-wallis test
   
-  nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("asc_", i)] <- kruskal.test(nca[[paste0("asc_", i)]] ~ nca$cat)$p.value
-  nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("nac_", i)] <- kruskal.test(nca[[paste0("nac_", i)]] ~ nca$cat)$p.value
-  nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("dfo_", i)] <- kruskal.test(nca[[paste0("dfo_", i)]] ~ nca$cat)$p.value
+  # nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("asc_", i)] <- kruskal.test(nca[[paste0("asc_", i)]] ~ nca$cat)$p.value
+  # nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("nac_", i)] <- kruskal.test(nca[[paste0("nac_", i)]] ~ nca$cat)$p.value
+  # nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("dfo_", i)] <- kruskal.test(nca[[paste0("dfo_", i)]] ~ nca$cat)$p.value
 
 
 
   # mann-whitney test cat1 vs cat2
   nca_cat1_cat2 <- filter(nca, cat == "cat1" | cat == "cat2")
-  nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("asc_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("asc_", i)]] ~ nca_cat1_cat2$cat)$p.value
-  nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("nac_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("nac_", i)]] ~ nca_cat1_cat2$cat)$p.value
-  nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("dfo_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("dfo_", i)]] ~ nca_cat1_cat2$cat)$p.value
+  nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("asc_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("asc_", i)]] ~ nca_cat1_cat2$cat)$p.value %>%
+      round(digits = 3)
+  nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("nac_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("nac_", i)]] ~ nca_cat1_cat2$cat)$p.value %>%
+      round(digits = 3)
+  nca_report_stats$mann_whitney_cat1_cat2[nca_report_stats$parameter == paste0("dfo_", i)] <- wilcox.test(nca_cat1_cat2[[paste0("dfo_", i)]] ~ nca_cat1_cat2$cat)$p.value %>%
+      round(digits = 3)
 
 }
 
@@ -389,10 +484,11 @@ write.csv(nca_report_stats, "output/non_compartimental_analysis/nca_report_stats
 
 # mark significant differences
 nca_report_stats <- mutate(nca_report_stats,
-  kruskal_wallis = ifelse(kruskal_wallis < 0.05, paste0(kruskal_wallis, "*"), kruskal_wallis),
+  # kruskal_wallis = ifelse(kruskal_wallis < 0.05, paste0(kruskal_wallis, "*"), kruskal_wallis),
   mann_whitney_cat1_cat2 = ifelse(mann_whitney_cat1_cat2 < 0.05, paste0(mann_whitney_cat1_cat2, "*"), mann_whitney_cat1_cat2)
-)
-write.csv(nca_report_stats, "output/non_compartimental_analysis/00 nca_report_stats_sig.csv", row.names = FALSE)
+) %>%
+    mutate(mann_whitney_cat1_cat2 = ifelse(mann_whitney_cat1_cat2 == "1", ">0.999", mann_whitney_cat1_cat2))
+write.csv(nca_report_stats, "output/non_compartimental_analysis/00 nca_report_2023-12-31.csv", row.names = FALSE)
 
 # summary table of nca parameters cat1 and cat2 together
 nca_report_cat_together <- tibble(

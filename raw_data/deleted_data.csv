@@ -1,0 +1,91 @@
+time,id,sample,drug,reason
+15,18,1,dfo,unexpected value & 1 sample at time point
+30,18,1,dfo,unexpected value
+180,1,1,dfo,undetected
+180,1,2,dfo,undetected
+180,1,3,dfo,undetected
+180,5,1,dfo,undetected
+180,5,2,dfo,undetected
+180,5,3,dfo,undetected
+180,8,1,dfo,undetected
+180,8,2,dfo,undetected
+180,9,1,dfo,undetected
+180,9,2,dfo,undetected
+180,14,1,dfo,undetected
+180,14,2,dfo,undetected
+180,15,1,dfo,undetected
+180,15,2,dfo,undetected
+180,17,1,dfo,undetected
+180,17,2,dfo,undetected
+180,18,1,dfo,undetected
+180,3,1,dfo,few data at time 180 for dfo
+180,6,1,dfo,few data at time 180 for dfo
+180,10,1,dfo,few data at time 180 for dfo
+180,10,2,dfo,few data at time 180 for dfo
+180,11,1,dfo,few data at time 180 for dfo
+180,11,2,dfo,few data at time 180 for dfo
+90,10,1,nac,unexpected value & measurement repeated
+120,10,1,nac,unexpected value & measurement repeated
+180,10,1,nac,unexpected value & measurement repeated
+90,10,2,nac,unexpected value & measurement repeated
+120,10,2,nac,unexpected value & measurement repeated
+180,10,2,nac,unexpected value & measurement repeated
+90,10,3,nac,unexpected value & measurement repeated
+120,10,3,nac,unexpected value & measurement repeated
+180,10,3,nac,unexpected value & measurement repeated
+30,11,1,nac,unexpected value & measurement repeated
+60,11,1,nac,unexpected value & measurement repeated
+90,11,1,nac,unexpected value & measurement repeated
+120,11,1,nac,unexpected value
+180,11,1,nac,unexpected value & measurement repeated
+30,11,2,nac,unexpected value & measurement repeated
+60,11,2,nac,unexpected value & measurement repeated
+90,11,2,nac,unexpected value & measurement repeated
+120,11,2,nac,unexpected value
+180,11,2,nac,unexpected value & measurement repeated
+30,11,3,nac,unexpected value & measurement repeated
+60,11,3,nac,unexpected value & measurement repeated
+90,11,3,nac,unexpected value & measurement repeated
+120,11,3,nac,unexpected value
+180,11,3,nac,unexpected value & measurement repeated
+90,14,1,nac,unexpected value & measurement repeated
+90,14,2,nac,unexpected value & measurement repeated
+90,14,3,nac,unexpected value & measurement repeated
+60,15,1,nac,unexpected value & measurement repeated
+90,15,1,nac,unexpected value & measurement repeated
+180,15,1,nac,unexpected value & measurement repeated
+60,15,2,nac,unexpected value & measurement repeated
+90,15,2,nac,unexpected value & measurement repeated
+180,15,2,nac,unexpected value & measurement repeated
+60,15,3,nac,unexpected value & measurement repeated
+90,15,3,nac,unexpected value & measurement repeated
+180,15,3,nac,unexpected value & measurement repeated
+30,17,1,nac,unexpected value & measurement repeated
+60,17,1,nac,unexpected value
+90,17,1,nac,unexpected value & measurement repeated
+120,17,1,nac,unexpected value & measurement repeated
+180,17,1,nac,unexpected value & measurement repeated
+30,17,2,nac,unexpected value & measurement repeated
+60,17,2,nac,unexpected value
+90,17,2,nac,unexpected value & measurement repeated
+120,17,2,nac,unexpected value & measurement repeated
+180,17,2,nac,unexpected value & measurement repeated
+30,17,3,nac,unexpected value & measurement repeated
+60,17,3,nac,unexpected value
+90,17,3,nac,unexpected value & measurement repeated
+180,17,3,nac,unexpected value & measurement repeated
+30,18,1,nac,repeated measurments markedly different
+60,18,1,nac,repeated measurments markedly different
+90,18,1,nac,repeated measurments markedly different
+120,18,1,nac,repeated measurments markedly different
+180,18,1,nac,repeated measurments markedly different
+30,18,2,nac,repeated measurments markedly different
+60,18,2,nac,repeated measurments markedly different
+90,18,2,nac,repeated measurments markedly different
+120,18,2,nac,repeated measurments markedly different
+180,18,2,nac,repeated measurments markedly different
+30,18,3,nac,repeated measurments markedly different
+60,18,3,nac,repeated measurments markedly different
+90,18,3,nac,repeated measurments markedly different
+120,18,3,nac,repeated measurments markedly different
+180,18,3,nac,repeated measurments markedly different
