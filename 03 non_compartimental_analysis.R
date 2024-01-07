@@ -78,7 +78,7 @@ sig_bar <- function(x.lo, x.hi, y.lo1, y.lo2, y.hi, label = "*", lab.space = .5,
 
 # import data covariables
 data <- tibble(read.csv("clean_data/all_data_long_4_non_0.csv", header = TRUE, sep = ","))
-data_0 <- tibble(read.csv("raw_data/all_data_long_3.csv", header = TRUE, sep = ","))
+data_0 <- tibble(read.csv("raw_data/all_data_long_5(dsm).csv", header = TRUE, sep = ","))
 data  <- data_0
 # output data (nca = non-compartmental analysis)
 nca <- tibble(
@@ -372,7 +372,12 @@ nca_summary <- summary(nca)
 
 # export nca table to csv
 write.csv(nca, "output/non_compartimental_analysis/00 nca.csv", row.names = FALSE)
-
+# change auc to micromolar, maintain rest of columns
+nca_auc_micromolar <- nca %>%
+  mutate_at(vars(contains("auc")), funs(. * 1000))
+View(nca_auc_micromolar)
+View(nca)
+nca <- nca_auc_micromolar
 # summary 
 nca_report <- tibble(
   parameter = c("asc_cmax", "asc_auc", "asc_auc_30_90", "asc_auc_inf", "asc_ke", "asc_t12", "asc_Cl", "asc_V",
@@ -425,7 +430,7 @@ nca_report_unite <- transmute(nca_report,
   cat2 = paste0(round(cat2_median, digits = 1), " (IQR ", round(cat2_Q1, digits = 1), " - ", round(cat2_Q3, digits = 1), ")")
   # p = paste0(round(p_median, digits = 1), " (IQR ", round(p_Q1, digits = 1), " - ", round(p_Q3, digits = 1), ")")
 )
-write.csv(nca_report_unite, "output/non_compartimental_analysis/00 nca_report_unite_1digit.csv", row.names = FALSE)
+write.csv(nca_report_unite, "output/non_compartimental_analysis/02 nca_report_unite_1digit.csv", row.names = FALSE)
 
 # string with Me (IQR q1 - q3) of cmax for asc, nac and dfo in cat1, cat2 and p
 paste0(nca_report_unite$cat1[nca_report_unite$parameter == "asc_cmax"], ", ", nca_report_unite$cat1[nca_report_unite$parameter == "nac_cmax"], ", ", nca_report_unite$cat1[nca_report_unite$parameter == "dfo_cmax"], " for CAT1 and", nca_report_unite$cat2[nca_report_unite$parameter == "asc_cmax"], ", ", nca_report_unite$cat2[nca_report_unite$parameter == "nac_cmax"], ", ", nca_report_unite$cat2[nca_report_unite$parameter == "dfo_cmax"], " for CAT2")
@@ -488,7 +493,7 @@ nca_report_stats <- mutate(nca_report_stats,
   mann_whitney_cat1_cat2 = ifelse(mann_whitney_cat1_cat2 < 0.05, paste0(mann_whitney_cat1_cat2, "*"), mann_whitney_cat1_cat2)
 ) %>%
     mutate(mann_whitney_cat1_cat2 = ifelse(mann_whitney_cat1_cat2 == "1", ">0.999", mann_whitney_cat1_cat2))
-write.csv(nca_report_stats, "output/non_compartimental_analysis/00 nca_report_2023-12-31.csv", row.names = FALSE)
+write.csv(nca_report_stats, "output/non_compartimental_analysis/00 nca_report_2024-01-07.csv", row.names = FALSE)
 
 # summary table of nca parameters cat1 and cat2 together
 nca_report_cat_together <- tibble(

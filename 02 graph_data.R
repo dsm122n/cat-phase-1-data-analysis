@@ -3,8 +3,10 @@ library(dplyr)
 library(tibble)
 library(ggthemes)
 library(ggh4x)
+library(gridExtra)
+
 # Import data from covariables_asc.csv covariables_nac.csv and covariables_dfo.csv
-data <- tibble(read.csv("raw data/all_data_long_3.csv", header = TRUE, sep = ","))
+data <- tibble(read.csv("raw_data/all_data_long_5(dsm).csv", header = TRUE, sep = ","))
 
 
 theme_graphpad <- function(){
@@ -107,8 +109,8 @@ nac_graph <- ggplot(data = data) +
                         guide = "axis_minor",
                         expand = expansion(mult = c(0.01, 0.05))
                         ) +
-    scale_y_continuous(limits = c(0, 1000), 
-                        breaks = seq(0, 1000, 200), 
+    scale_y_continuous(limits = c(0, 1200), 
+                        breaks = seq(0, 1200, 200), 
                         minor_breaks = seq(0, 1200, 100),
                         guide = "axis_minor",
                         expand = expansion(mult = c(0.02, 0.006))
@@ -138,7 +140,7 @@ ggsave("output/concentraciones_nac.png", nac_graph, width = 10, height = 7.5, dp
 #         axis.text = element_text(size = 8),
 #         plot.title = element_text(size = 12))
 # nac_graph_boxplot
-
+max(data$nac, na.rm = TRUE)
 # Plot mean and standard deviation for DFO mean_conc over time grouped by cat1, cat2 and p
 dfo_graph <- ggplot(data = data) +
     stat_summary(aes(x = time, y = dfo, col = cat), fun.y = mean, geom = "line", size = 1) +
@@ -149,9 +151,9 @@ dfo_graph <- ggplot(data = data) +
                         guide = "axis_minor",
                         expand = expansion(mult = c(0.01, 0.05))
                         ) +
-    scale_y_continuous(limits = c(0, 12), 
-                        breaks = seq(0, 12, 2), 
-                        minor_breaks = seq(0, 12, 1),
+    scale_y_continuous(limits = c(0, 30), 
+                        breaks = seq(0, 30, 4), 
+                        minor_breaks = seq(0, 30, 2),
                         guide = "axis_minor",
                         expand = expansion(mult = c(0.02, 0.006))
                        ) +
@@ -182,7 +184,6 @@ ggsave("output/concentraciones_dfo.png", dfo_graph, width = 8.4, height = 6, dpi
 
 # facet with the three graphs
 # install.packages("gridExtra")
-library(gridExtra)
 all_plots <- grid.arrange(asc_graph, nac_graph, dfo_graph, ncol = 3)
 all_plots
 # library to export pdf with verdana
@@ -203,3 +204,6 @@ ggsave("output/concentraciones_todas.png", all_plots, width = 174, height = 70, 
 # # save the grid.arrange plots
 # ggsave("output/concentraciones_boxplot.png", all_boxplots, width = 12.5, height = 4, dpi = 1000)
 # ggsave("output/concentraciones_boxplot_vert.png", all_boxplots_vert, width = 7.5, height = 10, dpi = 1000)
+
+# explore individual data
+
