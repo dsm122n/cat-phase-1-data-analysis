@@ -77,9 +77,9 @@ sig_bar <- function(x.lo, x.hi, y.lo1, y.lo2, y.hi, label = "*", lab.space = .5,
 
 
 # import data covariables
-data <- tibble(read.csv("clean_data/all_data_long_4_non_0.csv", header = TRUE, sep = ","))
+data <- tibble(read.csv("clean_data/all_data_long_5_non_0.csv", header = TRUE, sep = ","))
 data_0 <- tibble(read.csv("raw_data/all_data_long_5(dsm).csv", header = TRUE, sep = ","))
-data  <- data_0
+# data  <- data_0
 # output data (nca = non-compartmental analysis)
 nca <- tibble(
   id = c(1:18),
@@ -93,8 +93,8 @@ nca <- mutate(nca,
     asc_cmax = c(0),
     asc_tmax = c(0),
     asc_auc = c(0),
-    asc_auc_30_90 = c(0),
-    asc_c_mean_30_90 = c(0),
+    asc_auc_0_90 = c(0),
+    asc_c_mean_0_90 = c(0),
     asc_ke = c(0),
     asc_t12 = c(0),
     asc_Cl = c(0),
@@ -105,8 +105,8 @@ nca <- mutate(nca,
     nac_cmax = c(0),
     nac_tmax = c(0),
     nac_auc = c(0),
-    nac_auc_30_90 = c(0),
-    nac_c_mean_30_90 = c(0),
+    nac_auc_0_90 = c(0),
+    nac_c_mean_0_90 = c(0),
     nac_ke = c(0),
     nac_t12 = c(0),
     nac_Cl = c(0),
@@ -116,8 +116,8 @@ nca <- mutate(nca,
     dfo_cmax = c(0),
     dfo_tmax = c(0),
     dfo_auc = c(0),
-    dfo_auc_30_90 = c(0),
-    dfo_c_mean_30_90 = c(0),
+    dfo_auc_0_90 = c(0),
+    dfo_c_mean_0_90 = c(0),
     dfo_ke = c(0),
     dfo_t12 = c(0),
     dfo_Cl = c(0),
@@ -171,15 +171,15 @@ for (i in unique(data$id)){
     nca$nac_auc[nca$id == i] <- AUC((data_id$time)/60, (data_id$nac)/1000, na.rm = TRUE)
     nca$dfo_auc[nca$id == i] <- AUC((data_id$time)/60, (data_id$dfo)/1000, na.rm = TRUE)
 
-    # calculate AUC 30 to 90 minutes in milimolar*hours
-    nca$asc_auc_30_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$asc)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
-    nca$nac_auc_30_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$nac)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
-    nca$dfo_auc_30_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$dfo)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
+    # calculate AUC 0 to 90 minutes in milimolar*hours
+    nca$asc_auc_0_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$asc)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
+    nca$nac_auc_0_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$nac)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
+    nca$dfo_auc_0_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$dfo)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
 
     # calculate mean concentration 30 to 90 minutes
-    nca$asc_c_mean_30_90[nca$id == i] <- mean(data_id$asc[(data_id$time >= 30) & (data_id$time <= 90)])
-    nca$nac_c_mean_30_90[nca$id == i] <- mean(data_id$nac[(data_id$time >= 30) & (data_id$time <= 90)])
-    nca$dfo_c_mean_30_90[nca$id == i] <- mean(data_id$dfo[(data_id$time >= 30) & (data_id$time <= 90)])
+    nca$asc_c_mean_0_90[nca$id == i] <- mean(data_id$asc[(data_id$time >= 30) & (data_id$time <= 90)])
+    nca$nac_c_mean_0_90[nca$id == i] <- mean(data_id$nac[(data_id$time >= 30) & (data_id$time <= 90)])
+    nca$dfo_c_mean_0_90[nca$id == i] <- mean(data_id$dfo[(data_id$time >= 30) & (data_id$time <= 90)])
 
     
 }
@@ -245,7 +245,7 @@ dfo_elimination_phase <- ggplot(filter(data, time >=90, cat == "cat1"| cat == "c
 # Join graphs
 library(gridExtra)
 all_plots <- grid.arrange(asc_elimination_phase, nac_elimination_phase, dfo_elimination_phase, nrow = 3)
-ggsave("output/elimination_phase.png", all_plots, width = 20, height = 25, dpi = 1000, units = "cm")
+ggsave("output/elimination_phase_ no 0.png", all_plots, width = 20, height = 25, dpi = 1000, units = "cm")
 # if concentration is 0, then log concentration is NA
 
 data <- mutate(data, log_asc = ifelse(asc == 0, NA, log_asc),
@@ -335,7 +335,7 @@ pdf("output/non_compartimental_analysis/00 nca normality analysis.pdf", width = 
 # for cycle for each drug and parameter
 for (i in c("asc", "nac", "dfo")){
   
-  for (j in c("cmax", "auc", "auc_30_90", "c_mean_30_90", "ke", "t12", "Cl", "V", "auc_inf")){
+  for (j in c("cmax", "auc", "auc_0_90", "c_mean_0_90", "ke", "t12", "Cl", "V", "auc_inf")){
     # shapiro test
     shapiro_cat1 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat1"])
     shapiro_cat2 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat2"])
@@ -380,9 +380,9 @@ View(nca)
 nca <- nca_auc_micromolar
 # summary 
 nca_report <- tibble(
-  parameter = c("asc_cmax", "asc_auc", "asc_auc_30_90", "asc_auc_inf", "asc_ke", "asc_t12", "asc_Cl", "asc_V",
-                "nac_cmax", "nac_auc", "nac_auc_30_90", "nac_auc_inf", "nac_ke", "nac_t12", "nac_Cl", "nac_V",
-                "dfo_cmax", "dfo_auc", "dfo_auc_30_90", "dfo_auc_inf", "dfo_ke", "dfo_t12", "dfo_Cl", "dfo_V"),
+  parameter = c("asc_cmax", "asc_auc", "asc_auc_0_90", "asc_auc_inf", "asc_ke", "asc_t12", "asc_Cl", "asc_V",
+                "nac_cmax", "nac_auc", "nac_auc_0_90", "nac_auc_inf", "nac_ke", "nac_t12", "nac_Cl", "nac_V",
+                "dfo_cmax", "dfo_auc", "dfo_auc_0_90", "dfo_auc_inf", "dfo_ke", "dfo_t12", "dfo_Cl", "dfo_V"),
   cat1_mean = c(NA),
   cat1_sd = c(NA),
   cat1_median = c(NA),
@@ -421,16 +421,16 @@ for(i in nca_report$parameter){
   nca_report$p_Q3[nca_report$parameter == i] <- quantile(nca[[i]][nca$cat == "p"], 0.75, na.rm = TRUE)
 }
 
-write.csv(nca_report, "output/non_compartimental_analysis/nca_report_separate_cells.csv", row.names = FALSE)
+write.csv(nca_report, "output/non_compartimental_analysis/nca_report_separate_cells_v02.csv", row.names = FALSE)
 
 # just output "Me (IQR q1 - q3)"
 nca_report_unite <- transmute(nca_report,
   parameter = parameter,
-  cat1 = paste0(round(cat1_median, digits = 1), " (IQR ", round(cat1_Q1, digits = 1), " - ", round(cat1_Q3, digits = 1), ")"),
-  cat2 = paste0(round(cat2_median, digits = 1), " (IQR ", round(cat2_Q1, digits = 1), " - ", round(cat2_Q3, digits = 1), ")")
+  cat1 = paste0(round(cat1_median, digits = 1), "(", round(cat1_Q1, digits = 1), " - ", round(cat1_Q3, digits = 1), ")"),
+  cat2 = paste0(round(cat2_median, digits = 1), "(", round(cat2_Q1, digits = 1), " - ", round(cat2_Q3, digits = 1), ")")
   # p = paste0(round(p_median, digits = 1), " (IQR ", round(p_Q1, digits = 1), " - ", round(p_Q3, digits = 1), ")")
 )
-write.csv(nca_report_unite, "output/non_compartimental_analysis/02 nca_report_unite_1digit.csv", row.names = FALSE)
+write.csv(nca_report_unite, "output/non_compartimental_analysis/03 nca_report_unite_1digit_2024-01-12.csv", row.names = FALSE)
 
 # string with Me (IQR q1 - q3) of cmax for asc, nac and dfo in cat1, cat2 and p
 paste0(nca_report_unite$cat1[nca_report_unite$parameter == "asc_cmax"], ", ", nca_report_unite$cat1[nca_report_unite$parameter == "nac_cmax"], ", ", nca_report_unite$cat1[nca_report_unite$parameter == "dfo_cmax"], " for CAT1 and", nca_report_unite$cat2[nca_report_unite$parameter == "asc_cmax"], ", ", nca_report_unite$cat2[nca_report_unite$parameter == "nac_cmax"], ", ", nca_report_unite$cat2[nca_report_unite$parameter == "dfo_cmax"], " for CAT2")
@@ -464,7 +464,7 @@ nca_report_stats <- mutate(nca_report_unite,
 
 # kruskal-wallis test by cat
 # vector with parameters to analyze
-param_vector <- c("cmax", "auc", "auc_30_90",  "auc_inf", "ke", "t12", "Cl", "V")
+param_vector <- c("cmax", "auc", "auc_0_90",  "auc_inf", "ke", "t12", "Cl", "V")
 for(i in param_vector){
   #kruskal-wallis test
   
