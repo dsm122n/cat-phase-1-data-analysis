@@ -58,28 +58,8 @@ theme_graphpad <- function(){
 }
 
 
-sig_bar <- function(x.lo, x.hi, y.lo1, y.lo2, y.hi, label = "*", lab.space = .5,
-                   text.size = 8, line.size = .3, x.lo.lo = NULL,
-                   x.lo.hi = NULL, x.hi.lo = NULL, x.hi.hi = NULL,
-                   small.y.len = 1, colour = "black"){
-  out <- list(
-    geom_segment(aes(x = x.lo, xend = x.lo, y = y.lo1, yend = y.hi), size = .3,
-                 colour = colour),
-    geom_segment(aes(x = x.lo, xend = x.hi, y = y.hi, yend = y.hi), size = .3,
-                 colour = colour),
-    geom_segment(aes(x = x.hi, xend = x.hi, y = y.hi, yend = y.lo2), size = .3,
-                 colour = colour),
-    annotate("text", x = (x.lo + x.hi) / 2, y = y.hi + lab.space,
-             label = label, size = text.size, colour = colour)
-  )
-  return(out)
-}
-
-
 # import data covariables
-data <- tibble(read.csv("clean_data/all_data_long_5_non_0.csv", header = TRUE, sep = ","))
-data_0 <- tibble(read.csv("raw_data/all_data_long_5(dsm).csv", header = TRUE, sep = ","))
-# data  <- data_0
+data <- tibble(read.csv("raw_data/all_data_long_5(dsm).csv", header = TRUE, sep = ","))
 # output data (nca = non-compartmental analysis)
 nca <- tibble(
   id = c(1:18),
@@ -89,7 +69,7 @@ nca <- tibble(
 
 # parameters to calculate
 nca <- mutate(nca, 
-    asc_dosis = c(0),
+    asc_doses = c(0),
     asc_cmax = c(0),
     asc_tmax = c(0),
     asc_auc = c(0),
@@ -101,7 +81,7 @@ nca <- mutate(nca,
     asc_V = c(0),
     
     
-    nac_dosis = c(0),
+    nac_doses = c(0),
     nac_cmax = c(0),
     nac_tmax = c(0),
     nac_auc = c(0),
@@ -112,7 +92,7 @@ nca <- mutate(nca,
     nac_Cl = c(0),
     nac_V = c(0),
 
-    dfo_dosis = c(0),
+    dfo_doses = c(0),
     dfo_cmax = c(0),
     dfo_tmax = c(0),
     dfo_auc = c(0),
@@ -137,21 +117,21 @@ nca <- mutate(nca,
 
 for (i in nca$id) {
     if (nca$cat[i] == "cat1"){
-        nca$asc_dosis[i] <- 14.05
-        nca$nac_dosis[i] <- 12.25
-        nca$dfo_dosis[i] <- 1.78
+        nca$asc_doses[i] <- 14.05
+        nca$nac_doses[i] <- 12.25
+        nca$dfo_doses[i] <- 1.78
     } else if (nca$cat[i] == "cat2"){
-        nca$asc_dosis[i] <- 12.77
-        nca$nac_dosis[i] <- 24.51
-        nca$dfo_dosis[i] <- 2.85
+        nca$asc_doses[i] <- 12.77
+        nca$nac_doses[i] <- 24.51
+        nca$dfo_doses[i] <- 2.85
     } else {
-        nca$asc_dosis[i] <- 0
-        nca$nac_dosis[i] <- 0
-        nca$dfo_dosis[i] <- 0
+        nca$asc_doses[i] <- 0
+        nca$nac_doses[i] <- 0
+        nca$dfo_doses[i] <- 0
     }
 }
 
-# for cicle to calculate parameters for each individual
+# for() cicle to calculate parameters for each individual
 
 for (i in unique(data$id)){
     # filter by individual
@@ -184,8 +164,11 @@ for (i in unique(data$id)){
     
 }
 
-# calculate elimination constant (k) for each individual using linear regression at times 90-180 min
+# calculate elimination constant (k) for each individual using linear regression at times 90-180 min of log-linear concentration-time graph
 
+data <- mutate(data, log_asc = ifelse(asc == 0, NA, log_asc),
+               log_nac = ifelse(nac == 0, NA, log_nac),
+               log_dfo = ifelse(dfo == 0, NA, log_dfo))
 # add log concentration (mM) to data
 data <- mutate(data, log_asc = log(asc/1000), log_nac = log(nac/1000), log_dfo = log(dfo/1000))  %>%
     mutate(time_h = time/60)
@@ -209,7 +192,6 @@ asc_elimination_phase <- ggplot(filter(data, time >=90, cat == "cat1"| cat == "c
     labs(x = "Time (h)", y = "Log concentration (mM)") +
     ggtitle("asc") +
     theme(plot.title = element_text(hjust = 0.5))
-asc_elimination_phase
 nac_elimination_phase <- ggplot(filter(data, time >=90, cat == "cat1"| cat == "cat2")) +
     geom_point(aes(x = time_h, y = log_nac, col=cat)) +
     # add line for individuals acording to column px
@@ -248,9 +230,6 @@ all_plots <- grid.arrange(asc_elimination_phase, nac_elimination_phase, dfo_elim
 ggsave("output/elimination_phase_ no 0.png", all_plots, width = 20, height = 25, dpi = 1000, units = "cm")
 # if concentration is 0, then log concentration is NA
 
-data <- mutate(data, log_asc = ifelse(asc == 0, NA, log_asc),
-               log_nac = ifelse(nac == 0, NA, log_nac),
-               log_dfo = ifelse(dfo == 0, NA, log_dfo))
 # calculate k only for cat1 and cat2
 for (i in unique(data$id)) {
   # filter by individual
@@ -318,9 +297,9 @@ for(i in unique(data$id)){
   nca$nac_t12[nca$id == i] <- log(2) / nca$nac_ke[nca$id == i]
   nca$dfo_t12[nca$id == i] <- log(2) / nca$dfo_ke[nca$id == i]
   # calculate Cl
-  nca$asc_Cl[nca$id == i] <- nca$asc_dosis[nca$id == i] / nca$asc_auc_inf[nca$id == i]
-  nca$nac_Cl[nca$id == i] <- nca$nac_dosis[nca$id == i] / nca$nac_auc_inf[nca$id == i]
-  nca$dfo_Cl[nca$id == i] <- nca$dfo_dosis[nca$id == i] / nca$dfo_auc_inf[nca$id == i]
+  nca$asc_Cl[nca$id == i] <- nca$asc_doses[nca$id == i] / nca$asc_auc_inf[nca$id == i]
+  nca$nac_Cl[nca$id == i] <- nca$nac_doses[nca$id == i] / nca$nac_auc_inf[nca$id == i]
+  nca$dfo_Cl[nca$id == i] <- nca$dfo_doses[nca$id == i] / nca$dfo_auc_inf[nca$id == i]
   # calculate V
   nca$asc_V[nca$id == i] <- nca$asc_Cl[nca$id == i] / nca$asc_ke[nca$id == i]
   nca$nac_V[nca$id == i] <- nca$nac_Cl[nca$id == i] / nca$nac_ke[nca$id == i]
@@ -430,11 +409,7 @@ nca_report_unite <- transmute(nca_report,
   cat2 = paste0(round(cat2_median, digits = 1), "(", round(cat2_Q1, digits = 1), " - ", round(cat2_Q3, digits = 1), ")")
   # p = paste0(round(p_median, digits = 1), " (IQR ", round(p_Q1, digits = 1), " - ", round(p_Q3, digits = 1), ")")
 )
-write.csv(nca_report_unite, "output/non_compartimental_analysis/03 nca_report_unite_1digit_2024-01-12.csv", row.names = FALSE)
-
-# string with Me (IQR q1 - q3) of cmax for asc, nac and dfo in cat1, cat2 and p
-paste0(nca_report_unite$cat1[nca_report_unite$parameter == "asc_cmax"], ", ", nca_report_unite$cat1[nca_report_unite$parameter == "nac_cmax"], ", ", nca_report_unite$cat1[nca_report_unite$parameter == "dfo_cmax"], " for CAT1 and", nca_report_unite$cat2[nca_report_unite$parameter == "asc_cmax"], ", ", nca_report_unite$cat2[nca_report_unite$parameter == "nac_cmax"], ", ", nca_report_unite$cat2[nca_report_unite$parameter == "dfo_cmax"], " for CAT2")
-nc
+write.csv(nca_report_unite, "output/non_compartimental_analysis/04 nca_report_unite_1digit_2024-01-14.csv", row.names = FALSE)
 
 # Mean concentration of placebo for AA 
 mean_placebo_asc <- 0
@@ -444,16 +419,6 @@ for (i in c(2, 4, 7, 12, 13)) {
   mean_placebo_asc <- c (mean_placebo_asc, mean(data_id$asc))
 } 
 mean_placebo_asc <- mean_placebo_asc[-1]
-# Me (IQR q1 - q3) of mean concentration of placebo for AA
-paste0(round(median(mean_placebo_asc), digits = 1), " (IQR ", round(quantile(mean_placebo_asc, 0.25), digits = 1), " - ", round(quantile(mean_placebo_asc, 0.75), digits = 1), ")")
-
-# just output mean ± sd
-nca_report_unite_mean_sd <- transmute(nca_report,
-  parameter = parameter,
-  cat1 = paste0(round(cat1_mean, digits = 3), " ± ", round(cat1_sd, digits = 3)),
-  cat2 = paste0(round(cat2_mean, digits = 3), " ± ", round(cat2_sd, digits = 3)),
-  p = paste0(round(p_mean, digits = 3), " ± ", round(p_sd, digits = 3))
-)
 
   
 # statistics

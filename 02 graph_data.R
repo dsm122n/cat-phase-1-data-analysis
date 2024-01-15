@@ -84,21 +84,6 @@ asc_graph
 ggsave("output/concentraciones_asc.png", asc_graph, width = 8.4, height = 6, dpi = 1000, units = "cm")
 #same graph but with boxplot instead of mean and standard deviation grouping by cat and time
 
-# asc_graph_boxplot <- ggplot() +
-#     geom_boxplot(data = asc, aes(x = time, y = mean_conc, group = interaction(time, cat), col = cat), size = 1) +
-#     # set colors
-#     scale_colour_manual(values = c("#5c5c5c",  "#6c0000", "#04176b"), 
-#                         labels = c("Placebo", "CAT 1", "CAT 2")) +
-#     labs(x = "Time [min]", y = "Concentration [μM]", title = "Vitamin C") +
-#     # change font size
-#     scale_x_continuous(breaks = seq(0, 180, 30)) +
-#     theme_bw()+
-#     theme(legend.position = "bottom", legend.title = element_blank(), 
-#         legend.text = element_text(size=8),
-#         axis.text = element_text(size = 8),
-#         plot.title = element_text(size = 12))
-# asc_graph_boxplot
-
 # Plot mean and standard deviation for NAC over time grouped by cat1, cat2 and p
 nac_graph <- ggplot(data = data) +
     stat_summary(aes(x = time, y = nac, col = cat), fun.y = mean, geom = "line", size = 1) +
@@ -124,23 +109,6 @@ nac_graph <- ggplot(data = data) +
 nac_graph
 ggsave("output/concentraciones_nac.png", nac_graph, width = 10, height = 7.5, dpi = 1000, units = "cm")
 
-#box plot
-# nac_graph_boxplot <- ggplot() +
-#     geom_boxplot(data = nac, aes(x = time, y = mean_conc, group = interaction(time, cat), col = cat), size = 1) +
-#     # set colors
-#     scale_colour_manual(values = c("#6c0000", "#04176b"), 
-#                         labels = c("CAT 1", "CAT 2")) +
-#     labs(x = "Time [min]", y = "Concentration [μM]", title = "N-Acetylcysteine") +
-#     # change font size
-#     scale_x_continuous(breaks = seq(0, 180, 30)) +
-# 
-#     theme_bw()+
-#     theme(legend.position = "bottom", legend.title = element_blank(), 
-#         legend.text = element_text(size=8),
-#         axis.text = element_text(size = 8),
-#         plot.title = element_text(size = 12))
-# nac_graph_boxplot
-max(data$nac, na.rm = TRUE)
 # Plot mean and standard deviation for DFO mean_conc over time grouped by cat1, cat2 and p
 dfo_graph <- ggplot(data = data) +
     stat_summary(aes(x = time, y = dfo, col = cat), fun.y = mean, geom = "line", size = 1) +
@@ -165,22 +133,6 @@ dfo_graph <- ggplot(data = data) +
     theme_graphpad()
 dfo_graph
 ggsave("output/concentraciones_dfo.png", dfo_graph, width = 8.4, height = 6, dpi = 1000, units = "cm")
-#box plot
-# dfo_graph_boxplot <- ggplot() +
-#     geom_boxplot(data = dfo, aes(x = time, y = mean_conc, group = interaction(time, cat), col = cat), size = 1) +
-#     # set colors
-#     scale_colour_manual(values = c("#6c0000", "#04176b"), 
-#                         labels = c("CAT 1", "CAT 2")) +
-#     labs(x = "Time [min]", y = "Concentration [μM]", title = "Deferoxamine") +
-#     # change font size
-#     scale_x_continuous(breaks = seq(0, 180, 30)) +
-# 
-#     theme_bw()+
-#     theme(legend.position = "bottom", legend.title = element_blank(), 
-#         legend.text = element_text(size=8),
-#         axis.text = element_text(size = 8),
-#         plot.title = element_text(size = 12))
-# dfo_graph_boxplot
 
 # facet with the three graphs
 # install.packages("gridExtra")
