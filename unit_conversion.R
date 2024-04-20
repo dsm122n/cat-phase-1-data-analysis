@@ -3,6 +3,7 @@ while(TRUE){
   library(dplyr)
   library(ggplot2)
   library(tidyr)
+  library(gridExtra)
   library(httpgd)
   library(rsq) 
   library(DescTools)
@@ -11,11 +12,41 @@ while(TRUE){
   break
 }
 
+umol/L * g/mol = g * 10e-6 / L = g * 10e-7/dl = mg  / dl / 100 
+
+# Peso molecular ASC, NAC, DFO
+# ASC 176.12
+# NAC 163.2
+# DFO 560.6
+
+data  <- tibble(read.csv("raw_data/all_data_long_5(dsm).csv", header = TRUE, sep = ","))
+78.5*176.12
+data <- mutate(data, asc = asc * 176.12 / 100, nac = nac * 163.2 / 100, dfo = dfo * 560.6 / 100)
+data
+
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+############## Graphs #################################
+############## Graphs #################################
+############## Graphs #################################
+############## Graphs #################################
+############## Graphs #################################
+############## Graphs #################################
+############## Graphs #################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
 
 theme_graphpad <- function(){
     base_size <- 8
     title_size <- 8
-    line_size <- 1
+    line_size <- 0.5
 
     theme_foundation(base_size = base_size, base_family = "sans") +
     theme(
@@ -27,7 +58,7 @@ theme_graphpad <- function(){
     ) +
     theme(
         axis.line = element_line(colour="black", size = line_size),
-        axis.ticks = element_line(colour="black", size = 1),
+        axis.ticks = element_line(colour="black", size = line_size),
         axis.ticks.length = unit(4, "pt"),
         ggh4x.axis.ticks.length.minor = rel(0.5)
     )+
@@ -41,7 +72,7 @@ theme_graphpad <- function(){
         axis.title = element_text(face = "bold", size = title_size),
         axis.title.y = element_text(angle = 90, vjust = 2),
         axis.title.x = element_text(vjust = -0.2),
-        axis.text = element_text(face = "bold", size = title_size
+        axis.text = element_text(face = "bold", size = title_size*0.8
         ),
         axis.text.x = element_text(
           angle = 0,
@@ -49,17 +80,143 @@ theme_graphpad <- function(){
           vjust = 0
         )
     ) +
-    theme(legend.key = element_rect(fill = "white", colour = "white"), 
+    theme(legend.key = element_rect(fill = "#ffffff00", colour = "#ffffff00"), 
             legend.title = element_blank(),
-            legend.text = element_text(size = title_size, family = "verdana"),
+            legend.text = element_text(size = title_size, family = "verdana", face = "bold"),
+            
         ) +
     theme(legend.position = "bottom")+
     theme(text = element_text(family = "verdana"))
 }
 
 
+
+# Plot
+# Plot mean and standard deviation for ASC mean_conc over time grouped by cat1, cat2 and p
+asc_graph <- ggplot(data = data) +
+    # add mean and standard deviation
+    stat_summary(aes(x = time, y = asc, col = cat), fun.y = mean, geom = "line", size = 0.5) +
+    stat_summary(aes(x = time, y = asc, col = cat, shape = cat), fun.y = mean, geom = "point", size = 2) +
+    stat_summary(aes(x = time, y = asc, col = cat), fun.data = mean_sdl, fun.args=list(mult=1), geom = "errorbar", width = 4) +
+    scale_x_continuous(breaks = seq(0, 180, 30), 
+                        minor_breaks = seq(0, 180, 15), 
+                        guide = "axis_minor",
+                        expand = expansion(mult = c(0.01, 0.05))
+                        ) +
+    scale_y_continuous(limits = c(0, 2500), 
+                        breaks = seq(0, 2200, 400), 
+                        minor_breaks = seq(0, 2200, 200),
+                        guide = "axis_minor",
+                        expand = expansion(mult = c(0.02, 0.006))
+                       ) +
+    coord_cartesian(ylim = c(0, 2000)) +
+    scale_color_manual(values =  c("#471061", "#208f8d", "#cae11e"), 
+                        labels = c("CAT 1",     "CAT 2",      "Placebo")) +
+    scale_shape_manual(values = c(16, 15, 17),
+                        labels = c("CAT 1", "CAT 2", "Placebo")) +
+    labs(x = "Time [min]", y = "AA [μg/dL]", title = "Ascorbic acid") +
+    theme_graphpad()
+asc_graph
+ggsave("output/concentraciones_asc_mg_dl.png", asc_graph, width = 8.4, height = 6, dpi = 1000, units = "cm")
+
+#same graph but with boxplot instead of mean and standard deviation grouping by cat and time
+
+# Plot mean and standard deviation for NAC over time grouped by cat1, cat2 and p
+data_nac <- data %>% filter(!is.na(nac))
+setdiff(data, data_nac) %>%
+    View()
+nac_graph <- ggplot(data = data_nac) +
+    stat_summary(aes(x = time, y = nac, col = cat), fun.y = mean, geom = "line", size = 0.5) +
+    stat_summary(aes(x = time, y = nac, col = cat, shape = cat), fun.y = mean, geom = "point", size = 2) +
+    stat_summary(aes(x = time, y = nac, col = cat), fun.data = mean_sdl, fun.args=list(mult=1), geom = "errorbar", width = 4) +
+    scale_x_continuous(breaks = seq(0, 180, 30), 
+                        minor_breaks = seq(0, 180, 15), 
+                        guide = "axis_minor",
+                        expand = expansion(mult = c(0.01, 0.05))
+                        ) +
+    scale_y_continuous(limits = c(0, 2600), 
+                        breaks = seq(0, 2600, 400), 
+                        minor_breaks = seq(0, 2600, 200),
+                        guide = "axis_minor",
+                        expand = expansion(mult = c(0.02, 0.006))
+                       ) +
+    coord_cartesian(ylim = c(0, 2000)) +
+    scale_color_manual(values =  c("#471061", "#208f8d", "#cae11e"), 
+                        labels = c("CAT 1",     "CAT 2",      "Placebo")) +
+    scale_shape_manual(values = c(16, 15, 17),
+                        labels = c("CAT 1", "CAT 2", "Placebo")) +
+    labs(x = "Time [min]", y = "NAC [μg/dL]", title = "N-Acetylcysteine") +
+    theme_graphpad()
+nac_graph
+ggsave("output/concentraciones_nac_mg_dl.png", nac_graph, width = 10, height = 7.5, dpi = 1000, units = "cm")
+
+# Plot mean and standard deviation for DFO mean_conc over time grouped by cat1, cat2 and p
+dfo_graph <- ggplot(data = data) +
+    stat_summary(aes(x = time, y = dfo, col = cat), fun.y = mean, geom = "line", size = 0.5) +
+    stat_summary(aes(x = time, y = dfo, col = cat, shape = cat), fun.y = mean, geom = "point", size = 2) +
+    stat_summary(aes(x = time, y = dfo, col = cat), fun.data = mean_sdl, fun.args = list(mult=1), geom = "errorbar", width = 4) +
+    scale_x_continuous(breaks = seq(0, 180, 30), 
+                        minor_breaks = seq(0, 180, 15), 
+                        guide = "axis_minor",
+                        expand = expansion(mult = c(0.01, 0.05))
+                        ) +
+    scale_y_continuous(limits = c(0, 200), 
+                        breaks = seq(0, 170, 30), 
+                        minor_breaks = seq(0, 170, 15),
+                        guide = "axis_minor",
+                        expand = expansion(mult = c(0.02, 0.006))
+                       ) +
+    coord_cartesian(ylim = c(0, 150)) +
+    scale_color_manual(values =  c("#471061", "#208f8d", "#cae11e"), 
+                        labels = c("CAT 1",     "CAT 2",      "Placebo")) +
+    scale_shape_manual(values = c(16, 15, 17),
+                        labels = c("CAT 1", "CAT 2", "Placebo")) +
+    labs(x = "Time [min]", y = "DFO [μg/dL]", title = "Deferoxamine") +
+    theme_graphpad()
+dfo_graph
+ggsave("output/concentraciones_dfo_mg_dl.png", dfo_graph, width = 8.4, height = 6, dpi = 1000, units = "cm")
+
+all_plots <- grid.arrange(asc_graph, nac_graph, dfo_graph, ncol = 3)
+all_plots
+# library to export pdf with verdana
+install.packages("extrafont")
+library(extrafont)
+# export pdf
+ggsave("C:/Users/sanma/Desktop/concentraciones_todas_new_mg_dl.png", all_plots, width = 174, height = 60, units = "mm", dpi = 1000)
+ggsave("output/concentraciones_todas.png", all_plots, width = 174, height = 80, units = "mm")
+
+# svg support
+install.packages("svglite")
+library(svglite)
+ggsave("C:/Users/sanma/Desktop/concentraciones_todas_new_mg_dl.svg", all_plots, width = 174, height = 60, units = "mm")
+
+
+
+##########################################################
+##########################################################
+##########################################################
+##########################################################
+##########################################################
+########Non-compartmental analysis########################
+########Non-compartmental analysis########################
+########Non-compartmental analysis########################
+########Non-compartmental analysis########################
+########Non-compartmental analysis########################
+########Non-compartmental analysis########################
+##########################################################
+##########################################################
+##########################################################
+##########################################################
+##########################################################
+##########################################################
+
+
 # import data 
 data <- tibble(read.csv("raw_data/all_data_long_5(dsm).csv", header = TRUE, sep = ","))
+# unit conversion
+# micromolar to microgram per deciliter
+data <- mutate(data, asc = asc * 176.12 / 100, nac = nac * 163.2 / 100, dfo = dfo * 560.6 / 100)
+write.csv(data, "clean_data/all_data_long_5_conversion_mcg_dl.csv", row.names = FALSE)
 # output data (nca = non-compartmental analysis)
 nca <- tibble(
   id = c(1:18),
@@ -117,13 +274,13 @@ nca <- mutate(nca,
 
 for (i in nca$id) {
     if (nca$cat[i] == "cat1"){
-        nca$asc_doses[i] <- 14.05
-        nca$nac_doses[i] <- 12.25
-        nca$dfo_doses[i] <- 1.78
+        nca$asc_doses[i] <- 2475*1000 # micrograms
+        nca$nac_doses[i] <- 2000*1000 # micrograms
+        nca$dfo_doses[i] <- 1000*1000 # micrograms
     } else if (nca$cat[i] == "cat2"){
-        nca$asc_doses[i] <- 12.77
-        nca$nac_doses[i] <- 24.51
-        nca$dfo_doses[i] <- 2.85
+        nca$asc_doses[i] <- 2250*1000 # micrograms
+        nca$nac_doses[i] <- 4000*1000 # micrograms
+        nca$dfo_doses[i] <- 1600*1000 # micrograms
     } else {
         nca$asc_doses[i] <- 0
         nca$nac_doses[i] <- 0
@@ -166,10 +323,10 @@ for (i in unique(data$id)){
 
 # calculate elimination constant (k) for each individual using linear regression at times 90-180 min of log-linear concentration-time graph
 
-data <- mutate(data, log_asc = ifelse(asc == 0, NA, log_asc),
-               log_nac = ifelse(nac == 0, NA, log_nac),
-               log_dfo = ifelse(dfo == 0, NA, log_dfo))
-# add log concentration (mM) to data
+data <- mutate(data, log_asc = ifelse(asc == 0, NA, asc),
+               log_nac = ifelse(nac == 0, NA, nac),
+               log_dfo = ifelse(dfo == 0, NA, dfo))
+# add log concentration (mg/dl) to data and time in hours
 data <- mutate(data, log_asc = log(asc/1000), log_nac = log(nac/1000), log_dfo = log(dfo/1000))  %>%
     mutate(time_h = time/60)
 
@@ -225,9 +382,8 @@ dfo_elimination_phase <- ggplot(filter(data, time >=90, cat == "cat1"| cat == "c
     theme(plot.title = element_text(hjust = 0.5))
 
 # Join graphs
-library(gridExtra)
 all_plots <- grid.arrange(asc_elimination_phase, nac_elimination_phase, dfo_elimination_phase, nrow = 3)
-ggsave("output/elimination_phase_ no 0.png", all_plots, width = 20, height = 25, dpi = 1000, units = "cm")
+ggsave("output/elimination_phase_ no 0_mg_dl.png", all_plots, width = 20, height = 25, dpi = 1000, units = "cm")
 # if concentration is 0, then log concentration is NA
 
 # calculate k only for cat1 and cat2
