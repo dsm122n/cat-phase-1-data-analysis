@@ -12,7 +12,6 @@ while(TRUE){
   break
 }
 
-umol/L * g/mol = g * 10e-6 / L = g * 10e-7/dl = mg  / dl / 100 
 
 # Peso molecular ASC, NAC, DFO
 # ASC 176.12
@@ -21,7 +20,7 @@ umol/L * g/mol = g * 10e-6 / L = g * 10e-7/dl = mg  / dl / 100
 
 data  <- tibble(read.csv("raw_data/all_data_long_5(dsm).csv", header = TRUE, sep = ","))
 78.5*176.12
-data <- mutate(data, asc = asc * 176.12 / 100, nac = nac * 163.2 / 100, dfo = dfo * 560.6 / 100)
+data <- mutate(data, asc = asc * 176.12 / 1000, nac = nac * 163.2 / 1000, dfo = dfo * 560.6 / 1000)
 data
 
 #######################################################
@@ -104,20 +103,20 @@ asc_graph <- ggplot(data = data) +
                         expand = expansion(mult = c(0.01, 0.05))
                         ) +
     scale_y_continuous(limits = c(0, 2500), 
-                        breaks = seq(0, 2200, 400), 
-                        minor_breaks = seq(0, 2200, 200),
+                        breaks = seq(0, 2200, 30), 
+                        minor_breaks = seq(0, 2200, 15),
                         guide = "axis_minor",
                         expand = expansion(mult = c(0.02, 0.006))
                        ) +
-    coord_cartesian(ylim = c(0, 2000)) +
+    coord_cartesian(ylim = c(0, 210)) +
     scale_color_manual(values =  c("#471061", "#208f8d", "#cae11e"), 
                         labels = c("CAT 1",     "CAT 2",      "Placebo")) +
     scale_shape_manual(values = c(16, 15, 17),
                         labels = c("CAT 1", "CAT 2", "Placebo")) +
-    labs(x = "Time [min]", y = "AA [μg/dL]", title = "Ascorbic acid") +
+    labs(x = "Time [min]", y = "AA [μg/mL]", title = "Ascorbic acid") +
     theme_graphpad()
 asc_graph
-ggsave("output/concentraciones_asc_mg_dl.png", asc_graph, width = 8.4, height = 6, dpi = 1000, units = "cm")
+ggsave("output/concentraciones_asc_mg_ml.png", asc_graph, width = 8.4, height = 6, dpi = 1000, units = "cm")
 
 #same graph but with boxplot instead of mean and standard deviation grouping by cat and time
 
@@ -135,20 +134,20 @@ nac_graph <- ggplot(data = data_nac) +
                         expand = expansion(mult = c(0.01, 0.05))
                         ) +
     scale_y_continuous(limits = c(0, 2600), 
-                        breaks = seq(0, 2600, 400), 
-                        minor_breaks = seq(0, 2600, 200),
+                        breaks = seq(0, 2600, 30), 
+                        minor_breaks = seq(0, 2600, 15),
                         guide = "axis_minor",
                         expand = expansion(mult = c(0.02, 0.006))
                        ) +
-    coord_cartesian(ylim = c(0, 2000)) +
+    coord_cartesian(ylim = c(0, 180)) +
     scale_color_manual(values =  c("#471061", "#208f8d", "#cae11e"), 
                         labels = c("CAT 1",     "CAT 2",      "Placebo")) +
     scale_shape_manual(values = c(16, 15, 17),
                         labels = c("CAT 1", "CAT 2", "Placebo")) +
-    labs(x = "Time [min]", y = "NAC [μg/dL]", title = "N-Acetylcysteine") +
+    labs(x = "Time [min]", y = "NAC [μg/mL]", title = "N-Acetylcysteine") +
     theme_graphpad()
 nac_graph
-ggsave("output/concentraciones_nac_mg_dl.png", nac_graph, width = 10, height = 7.5, dpi = 1000, units = "cm")
+ggsave("output/concentraciones_nac_mg_ml.png", nac_graph, width = 10, height = 7.5, dpi = 1000, units = "cm")
 
 # Plot mean and standard deviation for DFO mean_conc over time grouped by cat1, cat2 and p
 dfo_graph <- ggplot(data = data) +
@@ -161,17 +160,17 @@ dfo_graph <- ggplot(data = data) +
                         expand = expansion(mult = c(0.01, 0.05))
                         ) +
     scale_y_continuous(limits = c(0, 200), 
-                        breaks = seq(0, 170, 30), 
-                        minor_breaks = seq(0, 170, 15),
+                        breaks = seq(0, 170, 3), 
+                        minor_breaks = seq(0, 170, 1),
                         guide = "axis_minor",
                         expand = expansion(mult = c(0.02, 0.006))
                        ) +
-    coord_cartesian(ylim = c(0, 150)) +
+    coord_cartesian(ylim = c(0, 15)) +
     scale_color_manual(values =  c("#471061", "#208f8d", "#cae11e"), 
                         labels = c("CAT 1",     "CAT 2",      "Placebo")) +
     scale_shape_manual(values = c(16, 15, 17),
                         labels = c("CAT 1", "CAT 2", "Placebo")) +
-    labs(x = "Time [min]", y = "DFO [μg/dL]", title = "Deferoxamine") +
+    labs(x = "Time [min]", y = "DFO [μg/mL]", title = "Deferoxamine") +
     theme_graphpad()
 dfo_graph
 ggsave("output/concentraciones_dfo_mg_dl.png", dfo_graph, width = 8.4, height = 6, dpi = 1000, units = "cm")
@@ -182,13 +181,13 @@ all_plots
 install.packages("extrafont")
 library(extrafont)
 # export pdf
-ggsave("C:/Users/sanma/Desktop/concentraciones_todas_new_mg_dl.png", all_plots, width = 174, height = 60, units = "mm", dpi = 1000)
-ggsave("output/concentraciones_todas.png", all_plots, width = 174, height = 80, units = "mm")
+ggsave("C:/Users/sanma/Desktop/concentraciones_todas_new_mg_ml.png", all_plots, width = 174, height = 60, units = "mm", dpi = 1000)
+ggsave("output/concentraciones_todas_mg/ml.png", all_plots, width = 174, height = 80, units = "mm")
 
 # svg support
 install.packages("svglite")
 library(svglite)
-ggsave("C:/Users/sanma/Desktop/concentraciones_todas_new_mg_dl.svg", all_plots, width = 174, height = 60, units = "mm")
+ggsave("C:/Users/sanma/Desktop/concentraciones_todas_new_mg_ml.svg", all_plots, width = 174, height = 60, units = "mm")
 
 
 
@@ -212,11 +211,11 @@ ggsave("C:/Users/sanma/Desktop/concentraciones_todas_new_mg_dl.svg", all_plots, 
 
 
 # import data 
-data <- tibble(read.csv("raw_data/all_data_long_5(dsm).csv", header = TRUE, sep = ","))
+data <- tibble(read.csv("clean_data/all_data_long_5_non_0.csv", header = TRUE, sep = ","))
 # unit conversion
 # micromolar to microgram per deciliter
-data <- mutate(data, asc = asc * 176.12 / 100, nac = nac * 163.2 / 100, dfo = dfo * 560.6 / 100)
-write.csv(data, "clean_data/all_data_long_5_conversion_mcg_dl.csv", row.names = FALSE)
+data <- mutate(data, asc = asc * 176.12 / 1000, nac = nac * 163.2 / 1000, dfo = dfo * 560.6 / 1000)
+write.csv(data, "clean_data/all_data_long_5_conversion_mcg_ml_non_0.csv", row.names = FALSE)
 # output data (nca = non-compartmental analysis)
 nca <- tibble(
   id = c(1:18),
@@ -274,13 +273,13 @@ nca <- mutate(nca,
 
 for (i in nca$id) {
     if (nca$cat[i] == "cat1"){
-        nca$asc_doses[i] <- 2475*1000 # micrograms
-        nca$nac_doses[i] <- 2000*1000 # micrograms
-        nca$dfo_doses[i] <- 1000*1000 # micrograms
+        nca$asc_doses[i] <- 2475 # miligrams
+        nca$nac_doses[i] <- 2000 # miligrams
+        nca$dfo_doses[i] <- 1000 # miligrams
     } else if (nca$cat[i] == "cat2"){
-        nca$asc_doses[i] <- 2250*1000 # micrograms
-        nca$nac_doses[i] <- 4000*1000 # micrograms
-        nca$dfo_doses[i] <- 1600*1000 # micrograms
+        nca$asc_doses[i] <- 2250 # miligrams
+        nca$nac_doses[i] <- 4000 # miligrams
+        nca$dfo_doses[i] <- 1600 # miligrams
     } else {
         nca$asc_doses[i] <- 0
         nca$nac_doses[i] <- 0
@@ -303,12 +302,12 @@ for (i in unique(data$id)){
     nca$nac_tmax[nca$id == i] <- data_id$time[which.max(data_id$nac)]
     nca$dfo_tmax[nca$id == i] <- data_id$time[which.max(data_id$dfo)]
 
-    # calculate AUC - convert minutes to hours and micromolar to milimolar
+    # calculate AUC - convert minutes to hours and mcg/ml to mg/ml
     nca$asc_auc[nca$id == i] <- AUC((data_id$time)/60, (data_id$asc)/1000, na.rm = TRUE) 
     nca$nac_auc[nca$id == i] <- AUC((data_id$time)/60, (data_id$nac)/1000, na.rm = TRUE)
     nca$dfo_auc[nca$id == i] <- AUC((data_id$time)/60, (data_id$dfo)/1000, na.rm = TRUE)
 
-    # calculate AUC 0 to 90 minutes in milimolar*hours
+    # calculate AUC 0 to 90 minutes in miligrams*hours
     nca$asc_auc_0_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$asc)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
     nca$nac_auc_0_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$nac)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
     nca$dfo_auc_0_90[nca$id == i] <- AUC((data_id$time)/60, (data_id$dfo)/1000, from = 0.5, to = 1.5, na.rm = TRUE)
@@ -383,47 +382,42 @@ dfo_elimination_phase <- ggplot(filter(data, time >=90, cat == "cat1"| cat == "c
 
 # Join graphs
 all_plots <- grid.arrange(asc_elimination_phase, nac_elimination_phase, dfo_elimination_phase, nrow = 3)
-ggsave("output/elimination_phase_ no 0_mg_dl.png", all_plots, width = 20, height = 25, dpi = 1000, units = "cm")
+ggsave("output/elimination_phase_ no 0_mg_ml.png", all_plots, width = 20, height = 25, dpi = 1000, units = "cm")
 # if concentration is 0, then log concentration is NA
 
 # calculate k only for cat1 and cat2
-for (i in unique(data$id)) {
+data_cat1_cat2 <- filter(data, cat == "cat1" | cat == "cat2", time >= 90)
+View(data_cat1_cat2)
+for (i in unique(data_cat1_cat2$id)) {
   # filter by individual
-  data_id <- filter(data, id == i, time >= 90)
+  data_id <- filter(data_cat1_cat2, id == i)
   # only calculate k for cat1 and cat2
-    if (data_id$cat[1] == "cat1" | data_id$cat[1] == "cat2"){
-        # calculate k
-        if(is.na(data_id$asc[1]) == FALSE && data_id$asc[1] != 0){
-            nca$asc_ke[nca$id == i] <- lm(log_asc ~ time_h, data = data_id) %>% 
-                summary(na.rm = TRUE) %>% 
-                .$coefficients %>% 
-                .[2] * (-1)
-        }else{
-            nca$asc_ke[nca$id == i] <- NA
-        }
-        if(is.na(data_id$nac[1]) == FALSE && data_id$nac[1] != 0){
-            nca$nac_ke[nca$id == i] <- lm(log_nac ~ time_h, data = data_id) %>% 
-                summary(na.rm = TRUE) %>% 
-                .$coefficients %>% 
-                .[2] * (-1)
-        }else {
-            nca$nac_ke[nca$id == i] <- NA
-        }
-        if(is.na(data_id$dfo[1]) == FALSE && data_id$dfo[1] != 0){
-            nca$dfo_ke[nca$id == i] <- lm(log_dfo ~ time_h, data = data_id) %>% 
-                summary(na.rm = TRUE) %>% 
-                .$coefficients %>% 
-                .[2] * (-1)
-        }else {
-            nca$dfo_ke[nca$id == i] <- NA
-        }
-    }
-    else{
+    # calculate k
+    if(is.na(data_id$asc[1]) == FALSE && data_id$asc[1] != 0){
+        nca$asc_ke[nca$id == i] <- lm(log_asc ~ time_h, data = data_id) %>% 
+            summary(na.rm = TRUE) %>% 
+            .$coefficients %>% 
+            .[2] * (-1)
+    }else{
         nca$asc_ke[nca$id == i] <- NA
-        nca$nac_ke[nca$id == i] <- NA
-        nca$dfo_ke[nca$id == i] <- NA
-    
     }
+    if(is.na(data_id$nac[1]) == FALSE && data_id$nac[1] != 0){
+        nca$nac_ke[nca$id == i] <- lm(log_nac ~ time_h, data = data_id) %>% 
+            summary(na.rm = TRUE) %>% 
+            .$coefficients %>% 
+            .[2] * (-1)
+    }else {
+        nca$nac_ke[nca$id == i] <- NA
+    }
+    if(is.na(data_id$dfo[1]) == FALSE && data_id$dfo[1] != 0){
+        nca$dfo_ke[nca$id == i] <- lm(log_dfo ~ time_h, data = filter(data_id, time<180)) %>% 
+            summary(na.rm = TRUE) %>% 
+            .$coefficients %>% 
+            .[2] * (-1)
+    }else {
+        nca$dfo_ke[nca$id == i] <- NA
+    }
+
 }
 
 # add last trapezoid to AUC
@@ -453,9 +447,9 @@ for(i in unique(data$id)){
   nca$nac_t12[nca$id == i] <- log(2) / nca$nac_ke[nca$id == i]
   nca$dfo_t12[nca$id == i] <- log(2) / nca$dfo_ke[nca$id == i]
   # calculate Cl
-  nca$asc_Cl[nca$id == i] <- nca$asc_doses[nca$id == i] / nca$asc_auc_inf[nca$id == i]
-  nca$nac_Cl[nca$id == i] <- nca$nac_doses[nca$id == i] / nca$nac_auc_inf[nca$id == i]
-  nca$dfo_Cl[nca$id == i] <- nca$dfo_doses[nca$id == i] / nca$dfo_auc_inf[nca$id == i]
+  nca$asc_Cl[nca$id == i] <- nca$asc_doses[nca$id == i] / (nca$asc_auc_inf[nca$id == i]*1000) # *100 para convertir dL a L
+  nca$nac_Cl[nca$id == i] <- nca$nac_doses[nca$id == i] / (nca$nac_auc_inf[nca$id == i]*1000) # *100 para convertir dL a L
+  nca$dfo_Cl[nca$id == i] <- nca$dfo_doses[nca$id == i] / (nca$dfo_auc_inf[nca$id == i]*1000) # *100 para convertir dL a L
   # calculate V
   nca$asc_V[nca$id == i] <- nca$asc_Cl[nca$id == i] / nca$asc_ke[nca$id == i]
   nca$nac_V[nca$id == i] <- nca$nac_Cl[nca$id == i] / nca$nac_ke[nca$id == i]
@@ -465,54 +459,54 @@ for(i in unique(data$id)){
 # nca normality analysis
 # shapiro test for normality, then plot density, histogram and qqplot
 # add to pdf 
-pdf("output/non_compartimental_analysis/00 nca normality analysis.pdf", width = 10, height = 10)
+# pdf("output/non_compartimental_analysis/00 nca normality analysis.pdf", width = 10, height = 10)
 
 # for cycle for each drug and parameter
-for (i in c("asc", "nac", "dfo")){
-  
-  for (j in c("cmax", "auc", "auc_0_90", "c_mean_0_90", "ke", "t12", "Cl", "V", "auc_inf")){
-    # shapiro test
-    shapiro_cat1 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat1"])
-    shapiro_cat2 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat2"])
-    par(mfrow = c(3, 3))
-    # add shapiro test p value to plot title
-    plot(density(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE), main = i)
-    rug(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = "", ticksize = 0.3)
-    hist(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = paste0(j, " CAT1"))
-    # plot qqplot
-    qqnorm(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1$p.value))
-    qqline(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1$p.value))
-
-    plot(density(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE), main = i)
-    rug(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, ticksize = 0.3)
-    hist(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, main = paste0(j," CAT2"))
-    qqnorm(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat2$p.value))
-    qqline(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat2$p.value))
-
-    # CAT1 and CAT2 together
-    shapiro_cat1_cat2 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"])
-
-    plot(density(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE), main = i)
-    rug(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, ticksize = 0.3)
-    hist(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, main = paste0(j," CAT1 and CAT2"))
-    qqnorm(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1_cat2$p.value))
-    qqline(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1_cat2$p.value))
-        
-  }
-
-}
-dev.off()
+# for (i in c("asc", "nac", "dfo")){
+#   
+#   for (j in c("cmax", "auc", "auc_0_90", "c_mean_0_90", "ke", "t12", "Cl", "V", "auc_inf")){
+#     # shapiro test
+#     shapiro_cat1 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat1"])
+#     shapiro_cat2 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat2"])
+#     par(mfrow = c(3, 3))
+#     # add shapiro test p value to plot title
+#     plot(density(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE), main = i)
+#     rug(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = "", ticksize = 0.3)
+#     hist(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = paste0(j, " CAT1"))
+#     # plot qqplot
+#     qqnorm(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1$p.value))
+#     qqline(nca[[paste0(i, "_", j)]][nca$cat == "cat1"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1$p.value))
+# 
+#     plot(density(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE), main = i)
+#     rug(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, ticksize = 0.3)
+#     hist(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, main = paste0(j," CAT2"))
+#     qqnorm(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat2$p.value))
+#     qqline(nca[[paste0(i, "_", j)]][nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat2$p.value))
+# 
+#     # CAT1 and CAT2 together
+#     shapiro_cat1_cat2 <- shapiro.test(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"])
+# 
+#     plot(density(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE), main = i)
+#     rug(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, ticksize = 0.3)
+#     hist(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, main = paste0(j," CAT1 and CAT2"))
+#     qqnorm(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1_cat2$p.value))
+#     qqline(nca[[paste0(i, "_", j)]][nca$cat == "cat1" | nca$cat == "cat2"], na.rm = TRUE, main = paste0(" p-value: ", shapiro_cat1_cat2$p.value))
+#         
+#   }
+# 
+# }
+# dev.off()
 
 nca_summary <- summary(nca)
 
 # export nca table to csv
 write.csv(nca, "output/non_compartimental_analysis/00 nca.csv", row.names = FALSE)
-# change auc to micromolar, maintain rest of columns
-nca_auc_micromolar <- nca %>%
+# change auc to mcg, maintain rest of columns
+nca_auc_micrograms <- nca %>%
   mutate_at(vars(contains("auc")), funs(. * 1000))
-View(nca_auc_micromolar)
+View(nca_auc_micrograms)
 View(nca)
-nca <- nca_auc_micromolar
+nca <- nca_auc_micrograms
 # summary 
 nca_report <- tibble(
   parameter = c("asc_cmax", "asc_auc", "asc_auc_0_90", "asc_auc_inf", "asc_ke", "asc_t12", "asc_Cl", "asc_V",
@@ -556,7 +550,7 @@ for(i in nca_report$parameter){
   nca_report$p_Q3[nca_report$parameter == i] <- quantile(nca[[i]][nca$cat == "p"], 0.75, na.rm = TRUE)
 }
 
-write.csv(nca_report, "output/non_compartimental_analysis/nca_report_separate_cells_v02.csv", row.names = FALSE)
+write.csv(nca_report, "output/non_compartimental_analysis/nca_report_separate_cells_v03_unit_conversion.csv", row.names = FALSE)
 
 # just output "Me (IQR q1 - q3)"
 nca_report_unite <- transmute(nca_report,
@@ -565,7 +559,15 @@ nca_report_unite <- transmute(nca_report,
   cat2 = paste0(round(cat2_median, digits = 1), "(", round(cat2_Q1, digits = 1), " - ", round(cat2_Q3, digits = 1), ")")
   # p = paste0(round(p_median, digits = 1), " (IQR ", round(p_Q1, digits = 1), " - ", round(p_Q3, digits = 1), ")")
 )
-write.csv(nca_report_unite, "output/non_compartimental_analysis/04 nca_report_unite_1digit_2024-01-14.csv", row.names = FALSE)
+# just output " mean (sd) ± sd"
+nca_report_unite <- transmute(nca_report,
+  parameter = parameter,
+  cat1 = paste0(round(cat1_mean, digits = 1), " ± ", round(cat1_sd, digits = 1)),
+  cat2 = paste0(round(cat2_mean, digits = 1), " ± ", round(cat2_sd, digits = 1))
+  # p = paste0(round(p_mean, digits = 1), " (", round(p_sd, digits = 1), ")")
+)
+View(nca_report_unite)
+write.csv(nca_report_unite, "output/non_compartimental_analysis/04 nca_report_unite_1digit_2024-04-20.csv", row.names = FALSE)
 
 # Mean concentration of placebo for AA 
 mean_placebo_asc <- 0
@@ -586,7 +588,7 @@ nca_report_stats <- mutate(nca_report_unite,
 # kruskal-wallis test by cat
 # vector with parameters to analyze
 param_vector <- c("cmax", "auc", "auc_0_90",  "auc_inf", "ke", "t12", "Cl", "V")
-for(i in param_vector){
+for(i   in param_vector){
   #kruskal-wallis test
   
   # nca_report_stats$kruskal_wallis[nca_report_stats$parameter == paste0("asc_", i)] <- kruskal.test(nca[[paste0("asc_", i)]] ~ nca$cat)$p.value
@@ -641,4 +643,4 @@ nca_report_cat_together_unite_cells <- transmute(nca_report_cat_together,
   cat = paste0(round(cat_median, digits = 3), " (", round(cat_Q1, digits = 3), " - ", round(cat_Q3, digits = 3), ")")
 )
 
-write.csv(nca_report_cat_together_unite_cells, "output/non_compartimental_analysis/01 nca_report_cat_together_unite_cells.csv", row.names = FALSE)
+write.csv(nca_report_cat_together_unite_cells, "output/non_compartimental_analysis/01 nca_report_cat_together_unite_cells_unit_conversion.csv", row.names = FALSE)
